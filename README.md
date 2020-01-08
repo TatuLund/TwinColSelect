@@ -1,17 +1,8 @@
-# Paper Slider
+# TwinColSelect
 
-Vaadin 14 Java integration of @polymer/paper-slider
+Vaadin 14 Java version of TwinColSelect
 
 ## Development instructions
-
-JavaScript modules can either be published as an NPM package or be kept as local 
-files in your project. The local JavaScript modules should be put in 
-`src/main/resources/META-INF/frontend` so that they are automatically found and 
-used in the using application.
-
-If the modules are published then the package should be noted in the component 
-using the `@NpmPackage` annotation in addition to using `@JsModule` annotation.
-
 
 Starting the test/demo server:
 1. Run `mvn jetty:run`.
@@ -25,6 +16,6 @@ mvn versions:set -DnewVersion=1.0.0 # You cannot publish snapshot versions
 mvn install -Pdirectory
 ```
 
-The package is created as `target/paper-slider-1.0.0.zip`
+The package is created as `target/twincolselect-1.0.0.zip`
 
 For more information or to upload the package, visit https://vaadin.com/directory/my-components?uploadNewComponent
