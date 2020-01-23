@@ -11,9 +11,14 @@ import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.dnd.DragSource;
+import com.vaadin.flow.component.dnd.DropEffect;
+import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -34,6 +39,19 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
+/**
+ * TwinColSelect component, also known as list builder. It is a component for multiselection.
+ * 
+ * This is component consists of two lists. You can move items from the other list to other. The left list is
+ * master list and backed by DataProvider. The right list is the selection list and reflects the value of the
+ * selection.
+ * 
+ * The component also has drag and drop support.
+ * 
+ * @author Tatu Lund
+ *
+ * @param <T> The bean type in TwinColSelect
+ */
 @Tag("div")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> implements HasItemsAndComponents<T>,
     HasSize, HasValidation, MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
@@ -59,17 +77,33 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 	final static String LIST_BORDER_ERROR = "1px var(--lumo-error-color) solid";
 	final static String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct)";
 	final static String LIST_BACKGROUND = "var(--lumo-contrast-10pct)";
+	final static String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
 
     private Registration dataProviderListenerRegistration;
 	
-    private static class CheckBoxItem<T> extends Checkbox
+    private class CheckBoxItem<T> extends Checkbox
     	implements ItemComponent<T> {
 
     	private final T item;
+		private DragSource<CheckBoxItem<T>> dragSource;
 
 		private CheckBoxItem(String id, T item) {
     		this.item = item;
     		getElement().setProperty(VALUE, id);
+    		dragSource = DragSource.create(this);
+    		dragSource.setDraggable(true);
+    		dragSource.addDragStartListener(event -> {
+    			this.setValue(true);
+    			if (this.getParent().get() == list1) {
+    				list2.getStyle().set("background", LIST_BACKGROUND_DROP);    					
+    			} else {
+    				list1.getStyle().set("background", LIST_BACKGROUND_DROP);    					    				
+    			}
+    		});
+    		dragSource.addDragEndListener(event -> {
+    			list1.getStyle().set("background", LIST_BACKGROUND);
+    			list2.getStyle().set("background", LIST_BACKGROUND);    			
+    		});
 		}
 
 		@Override
@@ -78,6 +112,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		}
     }
     
+    /**
+     * Default constructor
+     */
 	public TwinColSelect() {
 		super(null);
 		getElement().getStyle().set("display", "flex");
@@ -106,15 +143,18 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 			});
 			setValue(getSelectedItems());
 		});
+		allButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button addButton = new Button(VaadinIcon.ANGLE_RIGHT.create());
 		addButton.addClickListener(event -> {
 			moveItems(list1,list2);
 		});
+		addButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button removeButton = new Button(VaadinIcon.ANGLE_LEFT.create());
 		removeButton.addClickListener(event -> {
 			moveItems(list2,list1);
 		});
-		Button clearButton = new Button(VaadinIcon.TRASH.create());
+		removeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		Button clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
 		clearButton.addClickListener(event -> {
 			list2.getChildren().forEach(comp -> {
 				Checkbox checkbox = (Checkbox) comp;
@@ -123,12 +163,25 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 			});
 			setValue(getSelectedItems());
 		});
+		clearButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+		Button cleanButton = new Button(VaadinIcon.TRASH.create());
+		cleanButton.addClickListener(event -> {
+			list2.getChildren().forEach(comp -> {
+				Checkbox checkbox = (Checkbox) comp;
+				checkbox.setValue(false);
+			});
+			list1.getChildren().forEach(comp -> {
+				Checkbox checkbox = (Checkbox) comp;
+				checkbox.setValue(false);
+			});
+		});
+		cleanButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		VerticalLayout buttons = new VerticalLayout();
 		buttons.setWidth("15%");
 		buttons.setHeight("100%");
 		buttons.setJustifyContentMode(JustifyContentMode.CENTER);
 		buttons.setAlignItems(Alignment.CENTER);
-		buttons.add(allButton,addButton,removeButton, clearButton);
+		buttons.add(allButton,addButton,removeButton, clearButton, cleanButton);
 		layout.setFlexGrow(1, list1,list2);
 		layout.add(list1,buttons,list2);
 		add(indicators,layout,errorLabel);
@@ -139,11 +192,18 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 	    required.setVisible(true);
 	}
 	
+    /**
+     * Determines whether the twincolselect is marked as input required.
+     * <p>
+     *
+     * @return {@code true} if the input is required, {@code false} otherwise
+     */
 	@Override
 	public boolean isRequiredIndicatorVisible() {
 		return required.isVisible();
 	}
 	
+	// Internal method that moves items from list1 to list2
 	private void moveItems(VerticalLayout list1, VerticalLayout list2) {
 		list1.getChildren().forEach(comp -> {
 			Checkbox checkbox = (Checkbox) comp;
@@ -155,6 +215,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		setValue(getSelectedItems());
 	}
 
+	// Setup list layout
 	private void setupList(VerticalLayout list) {
 		list.getStyle().set("overflow-y", "auto");
 		list.setSizeFull();
@@ -163,8 +224,25 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		list.getStyle().set("border", LIST_BORDER);
 		list.getStyle().set("border-radius",LIST_BORDER_RADIUS);
 		list.getStyle().set("background", LIST_BACKGROUND);
+		DropTarget<VerticalLayout> dropTarget = DropTarget.create(list);
+		dropTarget.setDropEffect(DropEffect.MOVE);
+		dropTarget.setActive(true);
+		dropTarget.addDropListener(event -> {
+			event.getDragSourceComponent().ifPresent(component -> {
+				if (component instanceof CheckBoxItem) {
+					Component checkBox = component;
+					VerticalLayout otherList = (VerticalLayout) checkBox.getParent().get();
+					if (otherList != list) moveItems(otherList,list);
+				}
+			});
+		});
 	}
 
+	/**
+	 * Set the caption label of the twincolselect
+	 * 
+	 * @param label The label as String
+	 */
     public void setLabel(String label) {
         if (label != null) {
         	this.label.setText(label);
@@ -173,6 +251,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         	this.label.setVisible(false);
         }
     }
+
+    /**
+     * Gets the label of the twincolselect.
+     *
+     * @return the of the twincolselect
+     */
+    public String getLabel() {
+        return label.getText();
+    }
+
+    
     
 	private void setLabelStyles(HasStyle label) {
 		label.getStyle().set("align-self", "flex-start");
@@ -217,7 +306,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
                 	}
                 });
     }
-	
+
+    /**
+     * Sets the item label generator that is used to produce the strings shown
+     * in the twincolselect for each item. By default,
+     * {@link String#valueOf(Object)} is used.
+     *
+     * @param itemLabelGenerator
+     *            the item label provider to use, not null
+     */    
     public void setItemLabelGenerator(
             ItemLabelGenerator<T> itemLabelGenerator) {
         Objects.requireNonNull(itemLabelGenerator,
@@ -226,16 +323,38 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         reset(true);
     }
 	
+    /**
+     * Sets the item enabled predicate for this twincolselect. The predicate is
+     * applied to each item to determine whether the item should be enabled
+     * ({@code true}) or disabled ({@code false}). Disabled items are displayed
+     * as grayed out and the user cannot select them. The default predicate
+     * always returns true (all the items are enabled).
+     *
+     * @param itemEnabledProvider
+     *            the item enable predicate, not {@code null}
+     */
     public void setItemEnabledProvider(
             SerializablePredicate<T> itemEnabledProvider) {
         this.itemEnabledProvider = Objects.requireNonNull(itemEnabledProvider);
         refreshCheckboxes();
     }
-    
+
+    /**
+     * Gets the item label generator that is used to produce the strings shown
+     * in the twincolselect for each item.
+     *
+     * @return the item label generator used, not null
+     */    
     public ItemLabelGenerator<T> getItemLabelGenerator() {
         return itemLabelGenerator;
     }
     
+    /**
+     * Returns the item enabled predicate.
+     *
+     * @return the item enabled predicate
+     * @see #setItemEnabledProvider
+     */
     public SerializablePredicate<T> getItemEnabledProvider() {
         return itemEnabledProvider;
     }
@@ -332,7 +451,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
 	@Override
 	public boolean isInvalid() {
-		return false;
+		return errorLabel.isVisible();
 	}
 
 	@Override
@@ -383,6 +502,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		this.errorMessage = errorMessage;			
 	}
 
+    /**
+     * Gets the current error message from the twincolselect.
+     *
+     * @return the current error message
+     */	
 	@Override
 	public String getErrorMessage() {
 		return this.errorMessage;

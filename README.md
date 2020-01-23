@@ -2,6 +2,25 @@
 
 Vaadin 14 Java version of TwinColSelect
 
+TwinColSelect component, also known as list builder. It is a component for multiselection.
+
+This is component consists of two lists. You can move items from the other list to other. The left list is
+master list and backed by DataProvider. The right list is the selection list and reflects the value of the
+selection.
+ 
+ The component also has drag and drop support.
+
+## Release notes
+
+### Version 1.1.0
+
+- Small fixes, added some JavaDocs added Drag and Drop support
+- Vaadin 14.1 or newer required
+
+### Version 1.0.0
+
+- The first release 
+
 ## Development instructions
 
 Starting the test/demo server:
