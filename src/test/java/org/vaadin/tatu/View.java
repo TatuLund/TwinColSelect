@@ -30,7 +30,7 @@ public class View extends VerticalLayout {
         ListDataProvider<String> dp = (ListDataProvider<String>) select.getDataProvider();
         dp.setSortComparator((a, b) -> a.compareTo(b));
         select.setHeight("350px");
-        select.setWidth("350px");
+        select.setWidth("500px");
         select.addSelectionListener(event -> {
             log.addComponentAsFirst(new Span(("Value changed")));
             event.getValue().forEach(item -> log.addComponentAsFirst(new Span(item + " selected!")));
@@ -39,7 +39,6 @@ public class View extends VerticalLayout {
         refresh.addClickListener(event -> {
         	dp.getItems().add("An item "+newi);
         	newi++;
-        	dp.setSortComparator((a, b) -> a.compareTo(b));
             dp.refreshAll();
         });
         log.getStyle().set("overflow-y", "auto");

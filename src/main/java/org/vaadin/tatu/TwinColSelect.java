@@ -1,7 +1,9 @@
 package org.vaadin.tatu;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -30,6 +32,7 @@ import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.binder.HasItemsAndComponents;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.selection.MultiSelect;
@@ -212,7 +215,33 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 				list2.add(checkbox);
 			}
 		});
-		setValue(getSelectedItems());
+		DataProvider<T, ?> dp = this.getDataProvider();
+		if (dp instanceof InMemoryDataProvider) {
+			InMemoryDataProvider<T> dataProvider = (InMemoryDataProvider<T>) dp;
+			if (dataProvider.getSortComparator() != null) {
+				sortDestinationList(list2, dataProvider);
+			}
+		}
+ 		setValue(getSelectedItems());
+	}
+
+	private CheckBoxItem<T> check = null;
+ 
+	private void sortDestinationList(VerticalLayout list2, InMemoryDataProvider<T> dataProvider) {
+		Query query = new Query(0, Integer.MAX_VALUE, null, dataProvider.getSortComparator(), null);
+		Stream<T> sorted = dataProvider.fetch(query);
+		List<CheckBoxItem<T>> sortedBoxes = new ArrayList<>();
+		sorted.forEach(item -> {
+			boolean match = list2.getChildren().anyMatch(comp -> {
+				check = (CheckBoxItem<T>) comp;
+				return (check.getItem().equals(item));
+			});
+			if (match) {
+				sortedBoxes.add(check);
+			}			
+		});
+		list2.removeAll();
+		sortedBoxes.forEach(check -> list2.add(check));
 	}
 
 	// Setup list layout

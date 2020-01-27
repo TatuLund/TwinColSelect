@@ -12,6 +12,10 @@ selection.
 
 ## Release notes
 
+### Version 1.2.0
+
+- Keep lists sorted if in memory DataProvider has Comparator set
+
 ### Version 1.1.0
 
 - Small fixes, added some JavaDocs added Drag and Drop support
