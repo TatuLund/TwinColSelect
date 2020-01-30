@@ -12,6 +12,10 @@ selection.
 
 ## Release notes
 
+### Version 1.2.1
+
+- Changed default value of the error message
+
 ### Version 1.2.0
 
 - Keep lists sorted if in memory DataProvider has Comparator set

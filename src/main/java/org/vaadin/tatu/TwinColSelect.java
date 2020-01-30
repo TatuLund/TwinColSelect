@@ -67,7 +67,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     
 	private VerticalLayout list1 = new VerticalLayout();
 	private VerticalLayout list2 = new VerticalLayout();
-	private String errorMessage = "Validation error";
+	private String errorMessage = "";
 	private Div errorLabel = new Div();
 	private Label label = new Label();
 	private Label required = new Label("*");
