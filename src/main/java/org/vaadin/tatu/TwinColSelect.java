@@ -144,17 +144,19 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 				list1.remove(checkbox);
 				list2.add(checkbox);
 			});
-			setValue(getSelectedItems());
+			setModelValue(getSelectedItems(),true);
 		});
 		allButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button addButton = new Button(VaadinIcon.ANGLE_RIGHT.create());
 		addButton.addClickListener(event -> {
 			moveItems(list1,list2);
+			setModelValue(getSelectedItems(),true);
 		});
 		addButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button removeButton = new Button(VaadinIcon.ANGLE_LEFT.create());
 		removeButton.addClickListener(event -> {
 			moveItems(list2,list1);
+			setModelValue(getSelectedItems(),true);
 		});
 		removeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
@@ -164,7 +166,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 				list2.remove(checkbox);
 				list1.add(checkbox);
 			});
-			setValue(getSelectedItems());
+			setModelValue(getSelectedItems(),true);
 		});
 		clearButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button cleanButton = new Button(VaadinIcon.TRASH.create());
@@ -222,7 +224,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 				sortDestinationList(list2, dataProvider);
 			}
 		}
- 		setValue(getSelectedItems());
 	}
 
 	private CheckBoxItem<T> check = null;
@@ -262,6 +263,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 					Component checkBox = component;
 					VerticalLayout otherList = (VerticalLayout) checkBox.getParent().get();
 					if (otherList != list) moveItems(otherList,list);
+					setModelValue(getSelectedItems(),true);
 				}
 			});
 		});
@@ -290,8 +292,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         return label.getText();
     }
 
-    
-    
 	private void setLabelStyles(HasStyle label) {
 		label.getStyle().set("align-self", "flex-start");
 		label.getStyle().set("color","var(--lumo-secondary-text-color)");
@@ -299,7 +299,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		label.getStyle().set("font-size","var(--lumo-font-size-s)");
 		label.getStyle().set("transition","color 0.2s");
 		label.getStyle().set("line-height","1");
-//		label.getStyle().set("padding-bottom","1.5em");
 		label.getStyle().set("overflow","hidden");
 		label.getStyle().set("white-space","nowrap");
 		label.getStyle().set("text-overflow","ellipsis");
@@ -465,19 +464,13 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
 	@Override 		
 	public void setValue(Set<T> value) {
+		System.out.println("Set value");
 		Objects.requireNonNull(value,
 				"Cannot set a null value to checkbox group. "
 						+ "Use the clear-method to reset the component's value to an empty set.");	
 		super.setValue(value);
-		list1.getChildren().forEach(comp -> {
-			Checkbox checkbox = (Checkbox) comp;
-			if (checkbox.getLabel().equals(value)) {
-				list1.remove(checkbox);
-				list2.add(checkbox);
-			}
-		});			
 	}
-
+	
 	@Override
 	public boolean isInvalid() {
 		return errorLabel.isVisible();
@@ -550,7 +543,21 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
 	@Override
 	protected void setPresentationValue(Set<T> newPresentationValue) {
-		this.setValue(newPresentationValue);	
+		System.out.println("Set presentation value");
+		list2.getChildren().forEach(comp -> {
+			Checkbox checkbox = (Checkbox) comp;
+			list2.remove(checkbox);
+			list1.add(checkbox);
+		});			
+		newPresentationValue.forEach(item -> {
+			list1.getChildren().forEach(comp -> {
+				CheckBoxItem checkbox = (CheckBoxItem) comp;
+				if (checkbox.getItem().equals(item)) {
+					checkbox.setValue(true);
+				}
+			});
+		});
+		moveItems(list1,list2);
 	}
 	
 	public DataProvider<T,?> getDataProvider() {

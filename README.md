@@ -12,6 +12,10 @@ selection.
 
 ## Release notes
 
+### Version 1.2.2
+
+- Fixes broken setValue()
+
 ### Version 1.2.1
 
 - Changed default value of the error message
