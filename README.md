@@ -15,9 +15,13 @@ selection.
 
 ## Release notes
 
+### Version 1.2.3
+
+- Fixes broken clear()
+
 ### Version 1.2.2
 
-- Fixes broken setValue()
+- Fixes broken setValue(..)
 
 ### Version 1.2.1
 

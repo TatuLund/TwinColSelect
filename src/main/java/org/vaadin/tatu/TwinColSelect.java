@@ -161,12 +161,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		removeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
 		clearButton.addClickListener(event -> {
-			list2.getChildren().forEach(comp -> {
-				Checkbox checkbox = (Checkbox) comp;
-				list2.remove(checkbox);
-				list1.add(checkbox);
-			});
-			setModelValue(getSelectedItems(),true);
+			clear();
 		});
 		clearButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
 		Button cleanButton = new Button(VaadinIcon.TRASH.create());
@@ -324,7 +319,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     private void reset(boolean refresh) {
         keyMapper.removeAll();
         list1.removeAll();
-        if (!refresh) clear();
+        if (!refresh) super.clear();
         getDataProvider().fetch(new Query<>()).map(this::createCheckBox)
                 .forEach(checkbox -> {
                 	if (!this.getSelectedCheckboxItems().anyMatch(selected -> checkbox.getItem().equals(selected.getItem()))) {
@@ -461,10 +456,33 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		}
 
 	}
+	
+	@Override
+	public void clear() {
+		super.clear();
+		list2.getChildren().forEach(comp -> {
+			Checkbox checkbox = (Checkbox) comp;
+			list2.remove(checkbox);
+			list1.add(checkbox);
+		});
+		setModelValue(getSelectedItems(),true);		
+	}
 
+    /**
+     * Sets the value of this component. If the new value is not equal to the
+     * previous value, fires a value change event.
+     * <p>
+     * The component doesn't accept {@code null} values. The value of a checkbox
+     * group without any selected items is an empty set. You can use the
+     * {@link #clear()} method to set the empty value.
+     * 
+     * @param value
+     *            the new value to set, not {@code null}
+     * @throws NullPointerException
+     *             if value is {@code null}
+     */
 	@Override 		
 	public void setValue(Set<T> value) {
-		System.out.println("Set value");
 		Objects.requireNonNull(value,
 				"Cannot set a null value to checkbox group. "
 						+ "Use the clear-method to reset the component's value to an empty set.");	
@@ -543,7 +561,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
 	@Override
 	protected void setPresentationValue(Set<T> newPresentationValue) {
-		System.out.println("Set presentation value");
 		list2.getChildren().forEach(comp -> {
 			Checkbox checkbox = (Checkbox) comp;
 			list2.remove(checkbox);
