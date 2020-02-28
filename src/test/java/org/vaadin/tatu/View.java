@@ -53,7 +53,7 @@ public class View extends VerticalLayout {
         });
         Button clear = new Button("Clear");
         clear.addClickListener(event -> {
-        	select.clear();
+        	select.deselectAll();
         });
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");

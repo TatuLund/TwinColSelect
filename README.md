@@ -1,5 +1,5 @@
 [![Published on Vaadin  Directory](https://img.shields.io/badge/Vaadin%20Directory-published-00b4f0.svg)](https://vaadin.com/directory/component/twincolselect)
-[![Stars on Vaadin Directory](https://img.shields.io/vaadin-directory/star/gridfastnavigation-add-on.svg)](https://vaadin.com/directory/component/twincolselect)
+[![Stars on Vaadin Directory](https://img.shields.io/vaadin-directory/star/twincolselect.svg)](https://vaadin.com/directory/component/twincolselect)
 
 # TwinColSelect
 
@@ -14,6 +14,11 @@ selection.
  The component also has drag and drop support.
 
 ## Release notes
+
+### Version 1.2.4
+
+- Fixes bug with deselect / deselectAll
+- Changed clear() to reset checkboxes too
 
 ### Version 1.2.3
 

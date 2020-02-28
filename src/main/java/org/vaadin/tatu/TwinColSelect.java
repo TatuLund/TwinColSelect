@@ -462,6 +462,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 		super.clear();
 		list2.getChildren().forEach(comp -> {
 			Checkbox checkbox = (Checkbox) comp;
+			checkbox.setValue(false);
 			list2.remove(checkbox);
 			list1.add(checkbox);
 		});
@@ -563,6 +564,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 	protected void setPresentationValue(Set<T> newPresentationValue) {
 		list2.getChildren().forEach(comp -> {
 			Checkbox checkbox = (Checkbox) comp;
+			checkbox.setValue(false);
 			list2.remove(checkbox);
 			list1.add(checkbox);
 		});			
