@@ -15,6 +15,10 @@ selection.
 
 ## Release notes
 
+### Version 1.3.0
+
+- Added clearTicks(..) and setClearTicksOnSelect(..)
+
 ### Version 1.2.4
 
 - Fixes bug with deselect / deselectAll
