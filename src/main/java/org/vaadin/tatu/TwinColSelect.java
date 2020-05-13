@@ -21,6 +21,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
+import com.vaadin.flow.component.grid.Grid.Column;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -83,7 +84,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     final static String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
 
     private Registration dataProviderListenerRegistration;
-
+    private boolean clearTicksOnSelect = false;
+    
     private class CheckBoxItem<T> extends Checkbox
         implements ItemComponent<T> {
 
@@ -151,12 +153,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         addButton.addClickListener(event -> {
             moveItems(list1,list2);
             setModelValue(getSelectedItems(),true);
+            if (clearTicksOnSelect) clearTicks(ColType.RIGHT);
         });
         addButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         Button removeButton = new Button(VaadinIcon.ANGLE_LEFT.create());
         removeButton.addClickListener(event -> {
             moveItems(list2,list1);
             setModelValue(getSelectedItems(),true);
+            if (clearTicksOnSelect) clearTicks(ColType.LEFT);
         });
         removeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         Button clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
@@ -494,6 +498,24 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
                 checkbox.setValue(false);
             });
         }
+    }
+
+    /**
+     * Clear the ticks after selection action. Default is false.
+     *
+     * @param clearTicksOnSelect A boolean value
+     */
+    public void setClearTicks(boolean clearTicksOnSelect) {
+    	this.clearTicksOnSelect = clearTicksOnSelect;
+    }
+
+    /**
+     * Returns if ticks are currently set to be cleared or not.
+     *
+     * @return A boolean value
+     */
+    public boolean isClearTicksOnSelect() {
+    	return clearTicksOnSelect;
     }
 
     /**

@@ -3,7 +3,7 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>1.2.4</version>
+    <version>1.3.0</version>
     <name>TwinColSelect</name>
     <description>Integration of paper-slider for Vaadin platform</description>
 
