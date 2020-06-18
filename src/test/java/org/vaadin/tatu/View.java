@@ -60,9 +60,13 @@ public class View extends VerticalLayout {
         clearTicks.addClickListener(event -> {
             select.clearTicks(ColType.BOTH);
         });
+        Button readOnly = new Button("Read only");
+        readOnly.addClickListener(event -> {
+            select.setReadOnly(!select.isReadOnly());
+        });
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
-        add(select,refresh,clear,clearTicks,log);
+        add(select,refresh,clear,clearTicks,readOnly,log);
         setFlexGrow(1, log);
     }
 }

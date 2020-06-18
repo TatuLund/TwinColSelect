@@ -21,7 +21,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
-import com.vaadin.flow.component.grid.Grid.Column;
+import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -73,18 +73,26 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     private Label label = new Label();
     private Label required = new Label("*");
     private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
-
+    
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
     final static String LIST_BORDER = "1px var(--lumo-primary-color) solid";
     final static String LIST_BORDER_RADIUS = "var(--lumo-border-radius)";
     final static String LIST_BORDER_ERROR = "1px var(--lumo-error-color) solid";
+    final static String LIST_BORDER_READONLY = "1px dashed var(--lumo-contrast-30pct)";
     final static String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct)";
     final static String LIST_BACKGROUND = "var(--lumo-contrast-10pct)";
     final static String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
+    final static String LIST_BACKGROUND_READONLY = "transparent";
 
     private Registration dataProviderListenerRegistration;
     private boolean clearTicksOnSelect = false;
+
+	private Button allButton;
+	private Button addButton;
+	private Button removeButton;
+	private Button clearButton;
+	private Button cleanButton;
     
     private class CheckBoxItem<T> extends Checkbox
         implements ItemComponent<T> {
@@ -97,17 +105,18 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
             getElement().setProperty(VALUE, id);
             dragSource = DragSource.create(this);
             dragSource.setDraggable(true);
+           	dragSource.setEffectAllowed(EffectAllowed.MOVE);
             dragSource.addDragStartListener(event -> {
-                this.setValue(true);
-                if (this.getParent().get() == list1) {
-                    list2.getStyle().set("background", LIST_BACKGROUND_DROP);
-                } else {
-                    list1.getStyle().set("background", LIST_BACKGROUND_DROP);
-                }
+           		this.setValue(true);
+           		if (this.getParent().get() == list1) {
+           			list2.getStyle().set("background", LIST_BACKGROUND_DROP);
+           		} else {
+           			list1.getStyle().set("background", LIST_BACKGROUND_DROP);
+           		}
             });
             dragSource.addDragEndListener(event -> {
-                list1.getStyle().set("background", LIST_BACKGROUND);
-                list2.getStyle().set("background", LIST_BACKGROUND);
+           		list1.getStyle().set("background", LIST_BACKGROUND);
+           		list2.getStyle().set("background", LIST_BACKGROUND);
             });
         }
 
@@ -139,7 +148,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         setSizeFull();
         setupList(list1);
         setupList(list2);
-        Button allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
+        allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
         allButton.addClickListener(event -> {
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
@@ -149,26 +158,26 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
             setModelValue(getSelectedItems(),true);
         });
         allButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        Button addButton = new Button(VaadinIcon.ANGLE_RIGHT.create());
+        addButton = new Button(VaadinIcon.ANGLE_RIGHT.create());
         addButton.addClickListener(event -> {
             moveItems(list1,list2);
             setModelValue(getSelectedItems(),true);
             if (clearTicksOnSelect) clearTicks(ColType.RIGHT);
         });
         addButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        Button removeButton = new Button(VaadinIcon.ANGLE_LEFT.create());
+        removeButton = new Button(VaadinIcon.ANGLE_LEFT.create());
         removeButton.addClickListener(event -> {
             moveItems(list2,list1);
             setModelValue(getSelectedItems(),true);
             if (clearTicksOnSelect) clearTicks(ColType.LEFT);
         });
         removeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        Button clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
+        clearButton = new Button(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
         clearButton.addClickListener(event -> {
             clear();
         });
         clearButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        Button cleanButton = new Button(VaadinIcon.TRASH.create());
+        cleanButton = new Button(VaadinIcon.TRASH.create());
         cleanButton.addClickListener(event -> {
             list2.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
@@ -639,4 +648,29 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         return getDataProvider().getId(item);
     }
 
+    @Override
+    public void setReadOnly(boolean readOnly) {
+    	super.setReadOnly(readOnly);
+    	updateReadOnlyStyles(readOnly,list1);
+    	updateReadOnlyStyles(readOnly,list2);
+    	addButton.setEnabled(!readOnly);
+    	allButton.setEnabled(!readOnly);
+    	removeButton.setEnabled(!readOnly);
+    	clearButton.setEnabled(!readOnly);
+    	cleanButton.setEnabled(!readOnly);
+    }
+
+	private void updateReadOnlyStyles(boolean readOnly, VerticalLayout list) {
+		if (readOnly) {
+    		list.getStyle().set("background", LIST_BACKGROUND_READONLY);
+    		list.getStyle().set("border", LIST_BORDER_READONLY);
+    	} else {
+    		list.getStyle().set("background", LIST_BACKGROUND);
+    		list.getStyle().set("border", LIST_BORDER);
+    	}
+		list.getChildren().forEach(comp -> {
+			Checkbox checkBox = (Checkbox) comp;
+			checkBox.setEnabled(!readOnly);
+		});
+	}
 }
