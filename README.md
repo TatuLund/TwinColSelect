@@ -15,6 +15,14 @@ selection.
 
 ## Release notes
 
+### Version 1.4.0
+
+- Added range selection option
+
+### Version 1.3.1
+
+- Fixed broken readOnly functionality
+
 ### Version 1.3.0
 
 - Added clearTicks(..) and setClearTicksOnSelect(..)

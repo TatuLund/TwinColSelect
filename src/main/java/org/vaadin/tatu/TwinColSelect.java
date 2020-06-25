@@ -6,12 +6,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.ItemLabelGenerator;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
@@ -93,6 +95,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 	private Button removeButton;
 	private Button clearButton;
 	private Button cleanButton;
+	private Checkbox lockBox;
+
+	public Object lastItem;
     
     private class CheckBoxItem<T> extends Checkbox
         implements ItemComponent<T> {
@@ -117,6 +122,27 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
             dragSource.addDragEndListener(event -> {
            		list1.getStyle().set("background", LIST_BACKGROUND);
            		list2.getStyle().set("background", LIST_BACKGROUND);
+            });
+            addValueChangeListener(event -> {
+            	if (event.isFromClient() && lockBox.getValue()) {
+            		if (lastItem == null) {
+                		lastItem = this.getItem();
+                	} else {
+                		boolean itemIsInRange = false;
+                		for (Component comp : list1.getChildren().collect(Collectors.toList())) {
+                			CheckBoxItem c = (CheckBoxItem) comp;            			
+                			if (itemIsInRange == false 
+                					&& (c.getItem().equals(lastItem) 
+                							|| c.getItem().equals(this.getItem()))) itemIsInRange = true;            			
+                			else if (itemIsInRange == true 
+                					&& (c.getItem().equals(lastItem) 
+                							|| c.getItem().equals(this.getItem()))) itemIsInRange = false;
+                			if (itemIsInRange) c.setValue(true);
+                		}
+                		lastItem = null;
+                		lockBox.setValue(false);
+                	} 
+            	}
             });
         }
 
@@ -189,12 +215,13 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
             });
         });
         cleanButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
+        lockBox = new Checkbox(); 
         VerticalLayout buttons = new VerticalLayout();
         buttons.setWidth("15%");
         buttons.setHeight("100%");
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setAlignItems(Alignment.CENTER);
-        buttons.add(allButton,addButton,removeButton, clearButton, cleanButton);
+        buttons.add(lockBox,allButton,addButton,removeButton, clearButton, cleanButton);
         layout.setFlexGrow(1, list1,list2);
         layout.add(list1,buttons,list2);
         add(indicators,layout,errorLabel);
