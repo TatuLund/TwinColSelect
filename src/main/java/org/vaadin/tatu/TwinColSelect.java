@@ -2,6 +2,7 @@ package org.vaadin.tatu;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -20,6 +21,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
@@ -44,6 +46,8 @@ import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
+
+import elemental.json.JsonArray;
 
 /**
  * TwinColSelect component, also known as list builder. It is a component for multiselection.
@@ -130,7 +134,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
                 	} else {
                 		boolean itemIsInRange = false;
                 		for (Component comp : list1.getChildren().collect(Collectors.toList())) {
-                			CheckBoxItem c = (CheckBoxItem) comp;            			
+                			CheckBoxItem<T> c = (CheckBoxItem<T>) comp;            			
                 			if (itemIsInRange == false 
                 					&& (c.getItem().equals(lastItem) 
                 							|| c.getItem().equals(this.getItem()))) itemIsInRange = true;            			
@@ -156,7 +160,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
      * Default constructor
      */
     public TwinColSelect() {
-        super(null);
+    	this(Collections.emptySet());
+    }
+
+    protected TwinColSelect(Set<T> initialValue) {    	
+        super(initialValue);
+        if (initialValue != null) {
+            setModelValue(initialValue, false);
+            setPresentationValue(initialValue);
+        }        
         getElement().getStyle().set("display", "flex");
         getElement().getStyle().set("flex-direction", "column");
         HorizontalLayout layout = new HorizontalLayout();

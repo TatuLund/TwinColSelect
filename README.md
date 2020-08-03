@@ -15,6 +15,10 @@ selection.
 
 ## Release notes
 
+### Version 1.4.1
+
+- Fixed the default constructor to use empty set as default value (see #4)
+
 ### Version 1.4.0
 
 - Added range selection option
