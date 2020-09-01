@@ -14,14 +14,14 @@ import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.ItemLabelGenerator;
-import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
-import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
@@ -46,8 +46,6 @@ import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonArray;
 
 /**
  * TwinColSelect component, also known as list builder. It is a component for multiselection.
@@ -102,7 +100,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 	private Checkbox lockBox;
 
 	public Object lastItem;
-    
+   
     private class CheckBoxItem<T> extends Checkbox
         implements ItemComponent<T> {
 
@@ -195,6 +193,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
             });
             setModelValue(getSelectedItems(),true);
         });
+        
         allButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         addButton = new Button(VaadinIcon.ANGLE_RIGHT.create());
         addButton.addClickListener(event -> {
@@ -239,6 +238,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         add(indicators,layout,errorLabel);
     }
 
+    private void detectDirection() {
+        getUI().ifPresent(ui -> {
+        	ui.getPage().executeJs("return document.dir;").then(String.class, value -> {       
+        		if (value.equals(Direction.LEFT_TO_RIGHT.getClientName())) {
+            		removeButton.setIcon(VaadinIcon.ANGLE_LEFT.create());
+            		clearButton.setIcon(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
+            		addButton.setIcon(VaadinIcon.ANGLE_RIGHT.create());
+            		allButton.setIcon(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
+        		} else {
+            		removeButton.setIcon(VaadinIcon.ANGLE_RIGHT.create());
+            		clearButton.setIcon(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
+            		addButton.setIcon(VaadinIcon.ANGLE_LEFT.create());
+            		allButton.setIcon(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
+        		}
+        	});
+    	});
+    }    
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+    	super.onAttach(attachEvent);
+    	detectDirection();
+    }
+    
     @Override
     public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
         required.setVisible(true);

@@ -15,6 +15,10 @@ selection.
 
 ## Release notes
 
+### Version 1.5.0
+
+- Added right to left support, requires Vaadin 14.3 or newer
+
 ### Version 1.4.1
 
 - Fixed the default constructor to use empty set as default value (see #4)

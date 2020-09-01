@@ -6,6 +6,8 @@ import java.util.stream.Collectors;
 
 import org.vaadin.tatu.TwinColSelect.ColType;
 
+import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -19,6 +21,8 @@ public class View extends VerticalLayout {
 
     public View() {
         this.setSizeFull();
+        // Un-comment to test right to left mode
+//        UI.getCurrent().setDirection(Direction.RIGHT_TO_LEFT);
         TwinColSelect<String> select = new TwinColSelect<>();
 //        select.setLabel("Do selection");
 //        select.setRequiredIndicatorVisible(true);
