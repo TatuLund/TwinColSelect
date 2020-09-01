@@ -15,6 +15,10 @@ selection.
 
 ## Release notes
 
+### Version 1.5.1
+
+- Fixed bug with undefined direction
+
 ### Version 1.5.0
 
 - Added right to left support, requires Vaadin 14.3 or newer

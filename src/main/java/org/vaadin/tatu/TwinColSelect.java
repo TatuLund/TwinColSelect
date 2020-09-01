@@ -47,6 +47,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
+
 /**
  * TwinColSelect component, also known as list builder. It is a component for multiselection.
  *
@@ -240,17 +241,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
     private void detectDirection() {
         getUI().ifPresent(ui -> {
-        	ui.getPage().executeJs("return document.dir;").then(String.class, value -> {       
-        		if (value.equals(Direction.LEFT_TO_RIGHT.getClientName())) {
-            		removeButton.setIcon(VaadinIcon.ANGLE_LEFT.create());
-            		clearButton.setIcon(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
-            		addButton.setIcon(VaadinIcon.ANGLE_RIGHT.create());
-            		allButton.setIcon(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
-        		} else {
+        	ui.getPage().executeJs("return document.dir;").then(String.class, value -> {
+        		if (value.equals(Direction.RIGHT_TO_LEFT.getClientName())) {
             		removeButton.setIcon(VaadinIcon.ANGLE_RIGHT.create());
             		clearButton.setIcon(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
             		addButton.setIcon(VaadinIcon.ANGLE_LEFT.create());
             		allButton.setIcon(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
+        		} else {
+            		removeButton.setIcon(VaadinIcon.ANGLE_LEFT.create());
+            		clearButton.setIcon(VaadinIcon.ANGLE_DOUBLE_LEFT.create());
+            		addButton.setIcon(VaadinIcon.ANGLE_RIGHT.create());
+            		allButton.setIcon(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
         		}
         	});
     	});
