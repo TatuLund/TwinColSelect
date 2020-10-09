@@ -5,12 +5,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.vaadin.tatu.TwinColSelect.ColType;
+import org.vaadin.tatu.TwinColSelect.FilterMode;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
 
@@ -68,9 +72,23 @@ public class View extends VerticalLayout {
         readOnly.addClickListener(event -> {
             select.setReadOnly(!select.isReadOnly());
         });
+        TextField filterField = new TextField("Filter");
+        filterField.addValueChangeListener(event -> {
+        	dp.setFilter(item -> item.toUpperCase().startsWith(event.getValue().toUpperCase()));
+        });
+        Checkbox filterMode = new Checkbox("Reset mode");
+        filterMode.addValueChangeListener(event -> {
+        	if (event.getValue()) {
+        		select.setFilterMode(FilterMode.RESETVALUE);
+        	} else {
+        		select.setFilterMode(FilterMode.ITEMS);
+        	}
+        });
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
-        add(select,refresh,clear,clearTicks,readOnly,log);
+        HorizontalLayout buttons = new HorizontalLayout();
+        buttons.add(refresh,clear,clearTicks,readOnly,filterMode);        
+        add(filterField,select,buttons,log);
         setFlexGrow(1, log);
     }
 }

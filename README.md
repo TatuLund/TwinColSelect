@@ -15,6 +15,11 @@ selection.
 
 ## Release notes
 
+### Version 1.6.0
+
+- Add option to configure whether value is reset when filter is changed or not
+- Fixed corner case bugs related to filtering and sorting
+
 ### Version 1.5.1
 
 - Fixed bug with undefined direction

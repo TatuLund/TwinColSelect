@@ -17,6 +17,7 @@ import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.button.Button;
@@ -65,7 +66,23 @@ import com.vaadin.flow.shared.Registration;
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> implements HasItemsAndComponents<T>,
     HasSize, HasValidation, MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
 
-    private static final String VALUE = "value";
+	/**
+	 * Defines the filter mode 
+	 * 
+	 * @see setFilterMode(FilterMode)
+	 */
+	public enum FilterMode {
+		/**
+		 * Filter is applied only to the items
+		 */
+		ITEMS,
+		/**
+		 * Value is reset when filter is updated
+		 */
+		RESETVALUE;
+	}
+
+	private static final String VALUE = "value";
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>(this::getItemId);
 
@@ -261,8 +278,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     protected void onAttach(AttachEvent attachEvent) {
     	super.onAttach(attachEvent);
     	detectDirection();
+        if (getDataProvider() != null && dataProviderListenerRegistration == null) {
+            setupDataProviderListener(getDataProvider());
+        }
     }
-    
+
+    @Override
+    protected void onDetach(DetachEvent detachEvent) {
+        if (dataProviderListenerRegistration != null) {
+        	dataProviderListenerRegistration.remove();
+        	dataProviderListenerRegistration = null;
+        }
+        super.onDetach(detachEvent);
+    }    
+
     @Override
     public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
         required.setVisible(true);
@@ -299,8 +328,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 
     private CheckBoxItem<T> check = null;
 
+	private FilterMode filterMode = FilterMode.ITEMS;
+
     private void sortDestinationList(VerticalLayout list2, InMemoryDataProvider<T> dataProvider) {
-        Query query = new Query(0, Integer.MAX_VALUE, null, dataProvider.getSortComparator(), null);
+    	SerializablePredicate<T> filter = dataProvider.getFilter();
+    	dataProvider.clearFilters();
+		Query query = new Query(0, Integer.MAX_VALUE, null, dataProvider.getSortComparator(), null);
         Stream<T> sorted = dataProvider.fetch(query);
         List<CheckBoxItem<T>> sortedBoxes = new ArrayList<>();
         sorted.forEach(item -> {
@@ -314,6 +347,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         });
         list2.removeAll();
         sortedBoxes.forEach(check -> list2.add(check));
+        dataProvider.setFilter(filter);
     }
 
     // Setup list layout
@@ -393,9 +427,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
     }
 
     private void reset(boolean refresh) {
+    	if (filterMode == FilterMode.RESETVALUE) {
+    		if (!refresh) super.clear();
+    	}
         keyMapper.removeAll();
         list1.removeAll();
-        if (!refresh) super.clear();
         getDataProvider().fetch(new Query<>()).map(this::createCheckBox)
                 .forEach(checkbox -> {
                     if (!this.getSelectedCheckboxItems().anyMatch(selected -> checkbox.getItem().equals(selected.getItem()))) {
@@ -621,7 +657,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
         this.dataProvider = dataProvider;
         reset(true);
 
-        if (dataProviderListenerRegistration != null) {
+        setupDataProviderListener(dataProvider);
+    }
+
+	private void setupDataProviderListener(DataProvider<T, ?> dataProvider) {
+		if (dataProviderListenerRegistration != null) {
             dataProviderListenerRegistration.remove();
         }
         dataProviderListenerRegistration = dataProvider
@@ -638,7 +678,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
                         reset(false);
                     }
                 });
-    }
+	}
 
     @Override
     public Set<T> getSelectedItems() {
@@ -736,4 +776,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>,Set<T>> imp
 			checkBox.setEnabled(!readOnly);
 		});
 	}
+
+	/**
+	 * Define how data providers filter is applied
+	 * 
+	 * @param filterMode Filter mode
+	 */
+	public void setFilterMode(FilterMode filterMode) {
+		this.filterMode = filterMode;
+	}
+
+
 }
