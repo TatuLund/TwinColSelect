@@ -1,0 +1,4 @@
+vaadin-checkbox.checkbox-item[checked] { 
+	background: var(--lumo-primary-color);
+	color: var(--lumo-tint-80pct);
+}
