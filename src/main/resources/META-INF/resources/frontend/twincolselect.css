@@ -2,3 +2,28 @@ vaadin-checkbox.checkbox-item[checked] {
 	background: var(--lumo-primary-color);
 	color: var(--lumo-tint-80pct);
 }
+
+.twincolselect-errorlabel {
+	color: var(--lumo-error-text-color);
+    font-size: var(--lumo-font-size-xs)");
+    line-height: var(--lumo-line-height-xs);
+    will-change: max-height;
+    transition: 0.4s max-height;
+    max-height: 5em;
+    align-self: flex-end;
+}
+
+.twincolselect-label-styles {
+	align-self: flex-start;
+    color: var(--lumo-secondary-text-color);
+	font-weight: 500;
+	font-size: var(--lumo-font-size-s);
+	transition: color 0.2s;
+	line-height: 1;
+	overflow: hidden;
+	white-space: owrap;
+	text-overflow: ellipsis;
+	position: relative;
+	max-width: 100%;
+	box-sizing: border-box;
+}

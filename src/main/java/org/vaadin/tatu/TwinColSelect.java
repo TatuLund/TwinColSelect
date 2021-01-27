@@ -65,8 +65,8 @@ import com.vaadin.flow.shared.Registration;
  *            The bean type in TwinColSelect
  */
 @Tag("div")
-@CssImport(value = "twincolselect.css")
-@CssImport(value = "twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
+@CssImport(value = "./twincolselect.css")
+@CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         implements HasItemsAndComponents<T>, HasSize, HasValidation,
         MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
@@ -119,10 +119,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private Button addButton;
     private Button removeButton;
     private Button clearButton;
-    private Button cleanButton;
-    private Checkbox lockBox;
-
-    public Object lastItem;
+    private Button recycleButton;
 
     private class CheckBoxItem<T> extends Checkbox implements ItemComponent<T> {
 
@@ -149,28 +146,38 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 list1.getStyle().set("background", LIST_BACKGROUND);
                 list2.getStyle().set("background", LIST_BACKGROUND);
             });
-            addValueChangeListener(event -> {
-                if (event.isFromClient() && lockBox.getValue()) {
-                    if (lastItem == null) {
-                        lastItem = this.getItem();
+            addClickListener(click -> {
+                // handle doubleclick list swap
+                if (click.getClickCount() == 2) {
+                    if (this.getParent().get() == list1) {
+                        list1.remove(this);
+                        list2.add(this);
                     } else {
-                        boolean itemIsInRange = false;
-                        for (Component comp : list1.getChildren()
-                                .collect(Collectors.toList())) {
-                            CheckBoxItem<T> c = (CheckBoxItem<T>) comp;
-                            if (itemIsInRange == false
-                                    && (c.getItem().equals(lastItem) || c
-                                            .getItem().equals(this.getItem())))
-                                itemIsInRange = true;
-                            else if (itemIsInRange == true
-                                    && (c.getItem().equals(lastItem) || c
-                                            .getItem().equals(this.getItem())))
-                                itemIsInRange = false;
-                            if (itemIsInRange)
-                                c.setValue(true);
+                        list2.remove(this);
+                        list1.add(this);
+                    }
+                    updateButtons();
+                    TwinColSelect.this.setModelValue(getSelectedItems(), true);
+                } else {
+                    // implement range select
+                    if (click.isShiftKey()) {
+                        // Java is unhappy with passing this around
+                        CheckBoxItem<T> anchor = (CheckBoxItem<T>) getAnchor();
+                        if (anchor != null) {
+                            if (anchor.getParent().get() == list1) {
+                                if (this.getParent().get() == list1) {
+                                    markRange(list1, anchor, this);
+                                }
+                            } else {
+                                if (this.getParent().get() == list2) {
+                                    markRange(list2, anchor, this);
+                                }
+                            }
                         }
-                        lastItem = null;
-                        lockBox.setValue(false);
+                        setAnchor(null); // always clear the anchor
+                    } else {
+                        // remember the item clicked
+                        setAnchor(this);
                     }
                 }
             });
@@ -179,6 +186,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         @Override
         public T getItem() {
             return item;
+        }
+    }
+
+    // again, Java doesn't like passing inner class instances in and out for
+    // reasons not entirely clear to me
+    /**
+     * set the value of all children of the list to true which are between a and
+     * b, leaving items not between a and b alone
+     * 
+     * @param list
+     * @param anchor
+     * @param checkBoxItem
+     */
+    private void markRange(VerticalLayout list, Component anchor, Component checkBoxItem) {
+        boolean marking = false;
+        for (Component i : list.getChildren().collect(Collectors.toList())) {
+            if (i == anchor || i == checkBoxItem) {
+                marking = !marking;
+                ((CheckBoxItem<T>) i).setValue(true);
+            } else {
+                if (marking) {
+                    ((CheckBoxItem<T>) i).setValue(true);
+                }
+            }
         }
     }
 
@@ -246,26 +277,29 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             updateButtons();
         });
         clearButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        cleanButton = new Button(VaadinIcon.TRASH.create());
-        cleanButton.addClickListener(event -> {
+        recycleButton = new Button(VaadinIcon.RECYCLE.create());
+        recycleButton.addClickListener(event -> {
+            // true if any value is selected
+            boolean any2 = list2.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
+            // then set all to the negation (any? then all false, none? than all true)
             list2.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
-                checkbox.setValue(false);
+                checkbox.setValue(!any2);
             });
+            boolean any1 = list1.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
-                checkbox.setValue(false);
+                checkbox.setValue(!any1);
             });
         });
-        cleanButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        lockBox = new Checkbox();
+        recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
         VerticalLayout buttons = new VerticalLayout();
         buttons.setWidth("15%");
         buttons.setHeight("100%");
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setAlignItems(Alignment.CENTER);
-        buttons.add(lockBox, allButton, addButton, removeButton, clearButton,
-                cleanButton);
+        buttons.add(allButton, addButton, removeButton, clearButton,
+                recycleButton);
         layout.setFlexGrow(1, list1, list2);
         layout.add(list1, buttons, list2);
         add(indicators, layout, errorLabel);
@@ -374,6 +408,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private FilterMode filterMode = FilterMode.ITEMS;
 
+    private CheckBoxItem<T> anchorItem = null;
+
+    private void setAnchor(Component checkBoxItem) {
+        anchorItem = (CheckBoxItem<T>) checkBoxItem;
+    }
+
+    private void clearAnchor() {
+        anchorItem = null;
+    }
+
+    private CheckBoxItem<T> getAnchor() {
+        return anchorItem;
+    }
+
     private void sortDestinationList(VerticalLayout list2,
             InMemoryDataProvider<T> dataProvider) {
         SerializablePredicate<T> filter = dataProvider.getFilter();
@@ -447,32 +495,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private void setLabelStyles(HasStyle label) {
-        label.getStyle().set("align-self", "flex-start");
-        label.getStyle().set("color", "var(--lumo-secondary-text-color)");
-        label.getStyle().set("font-weight", "500");
-        label.getStyle().set("font-size", "var(--lumo-font-size-s)");
-        label.getStyle().set("transition", "color 0.2s");
-        label.getStyle().set("line-height", "1");
-        label.getStyle().set("overflow", "hidden");
-        label.getStyle().set("white-space", "nowrap");
-        label.getStyle().set("text-overflow", "ellipsis");
-        label.getStyle().set("position", "relative");
-        label.getStyle().set("max-width", "100%");
-        label.getStyle().set("box-sizing", "border-box");
-    }
-
-    private void setRequiredStyles() {
-        required.getStyle().set("color", "var(--lumo-primary-color)");
+        label.addClassName("twincolselect-label-styles");
     }
 
     private void setErrorLabelStyles() {
-        errorLabel.getStyle().set("color", "var(--lumo-error-text-color)");
-        errorLabel.getStyle().set("font-size", "var(--lumo-font-size-xs)");
-        errorLabel.getStyle().set("line-height", "var(--lumo-line-height-xs)");
-        errorLabel.getStyle().set("will-change", "max-height");
-        errorLabel.getStyle().set("transition", "0.4s max-height");
-        errorLabel.getStyle().set("max-height", "5em");
-        errorLabel.getStyle().set("align-self", "flex-end");
+        errorLabel.addClassName("twincolselect-errorlabel");        
     }
 
     private void reset(boolean refresh) {
@@ -754,6 +781,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void setErrorMessage(String errorMessage) {
+        errorLabel.setVisible(true);
         this.errorMessage = errorMessage;
     }
 
@@ -814,7 +842,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         allButton.setEnabled(!readOnly);
         removeButton.setEnabled(!readOnly);
         clearButton.setEnabled(!readOnly);
-        cleanButton.setEnabled(!readOnly);
+        recycleButton.setEnabled(!readOnly);
     }
 
     private void updateReadOnlyStyles(boolean readOnly, VerticalLayout list) {
@@ -857,12 +885,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         clearButton.setIcon(icon);
     }
 
-    public void setCleanButtonCaption(String text) {
-        cleanButton.setText(text);
+    public void setRecycleButtonCaption(String text) {
+        recycleButton.setText(text);
     }
 
-    public void setCleanButtonIcon(Component icon) {
-        cleanButton.setIcon(icon);
+    public void setRecycleButtonIcon(Component icon) {
+        recycleButton.setIcon(icon);
     }
 
     public void setRemoveButtonCaption(String text) {

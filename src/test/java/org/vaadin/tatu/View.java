@@ -15,6 +15,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
 
@@ -23,14 +24,25 @@ public class View extends VerticalLayout {
     int newi = 1000;
     VerticalLayout log = new VerticalLayout();
 
+    public class Bean {
+        private Set<String> selection;
+
+        public Set<String> getSelection() {
+            return selection;
+        }
+
+        public void setSelection(Set<String> selection) {
+            this.selection = selection;
+        }
+     };
+    
     public View() {
         this.setSizeFull();
         // Un-comment to test right to left mode
         // UI.getCurrent().setDirection(Direction.RIGHT_TO_LEFT);
+        Binder<Bean> binder = new Binder<>();
         TwinColSelect<String> select = new TwinColSelect<>();
-        // select.setLabel("Do selection");
-        // select.setRequiredIndicatorVisible(true);
-        // select.setInvalid(true);
+        select.setLabel("Do selection");
         select.setItems("One", "Two", "Three", "Four", "Five", "Six", "Seven",
                 "Eight", "Nine", "Ten");
         // Set<String> set = new HashSet<>();
@@ -50,8 +62,17 @@ public class View extends VerticalLayout {
                 selection.add(item);
             }
         });
+
+        Bean bean =  new Bean();
         select.setValue(selection);
-        select.addSelectionListener(event -> {
+
+        binder.forField(select)
+            .asRequired("Empty selection not allowed")
+            .withValidator(sel -> sel.size() == 2 && sel.contains("Two") && sel.contains("Four"),"Selection needs to contain two and four")
+            .bind(Bean::getSelection,Bean::setSelection);        
+        binder.setBean(bean);
+        
+        select.addValueChangeListener(event -> {
             log.removeAll();
             log.addComponentAsFirst(new Span(("Value changed")));
             event.getValue().forEach(item -> log
@@ -80,7 +101,7 @@ public class View extends VerticalLayout {
             dp.setFilter(item -> item.toUpperCase()
                     .startsWith(event.getValue().toUpperCase()));
         });
-        Checkbox filterMode = new Checkbox("Reset mode");
+        Checkbox filterMode = new Checkbox("Reset filter mode");
         filterMode.addValueChangeListener(event -> {
             if (event.getValue()) {
                 select.setFilterMode(FilterMode.RESETVALUE);
