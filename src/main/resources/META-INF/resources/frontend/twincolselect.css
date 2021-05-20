@@ -5,7 +5,7 @@ vaadin-checkbox.checkbox-item[checked] {
 
 .twincolselect-errorlabel {
 	color: var(--lumo-error-text-color);
-    font-size: var(--lumo-font-size-xs)");
+    font-size: var(--lumo-font-size-xs);
     line-height: var(--lumo-line-height-xs);
     will-change: max-height;
     transition: 0.4s max-height;

@@ -15,6 +15,17 @@ selection.
 
 ## Release notes
 
+### Version 1.8.1
+- Fixed css that breaks with Vaadin 14.6.0
+
+### Version 1.8.0
+- Improved range select & Double click to select, kudos to Michael Thorne for contributions
+- Small fixes  
+
+### Version 1.7.0
+- Made the items look less like conventional checkboxes
+- Added API to customize button icons and captions
+
 ### Version 1.6.0
 
 - Add option to configure whether value is reset when filter is changed or not
