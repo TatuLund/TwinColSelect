@@ -6,7 +6,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,9 +20,11 @@ import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -35,17 +40,24 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.data.binder.HasDataProvider;
-import com.vaadin.flow.data.binder.HasItemsAndComponents;
+import com.vaadin.flow.data.binder.HasItemComponents;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.DataProviderWrapper;
+import com.vaadin.flow.data.provider.DataViewUtils;
+import com.vaadin.flow.data.provider.HasDataView;
+import com.vaadin.flow.data.provider.HasListDataView;
+import com.vaadin.flow.data.provider.IdentifierProvider;
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
+import com.vaadin.flow.data.provider.ItemCountChangeEvent;
 import com.vaadin.flow.data.provider.KeyMapper;
+import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
@@ -68,8 +80,10 @@ import com.vaadin.flow.shared.Registration;
 @CssImport(value = "./twincolselect.css")
 @CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
-        implements HasItemsAndComponents<T>, HasSize, HasValidation,
-        MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
+        implements HasItemComponents<T>, HasSize, HasValidation,
+        MultiSelect<TwinColSelect<T>, T>,
+        HasListDataView<T, TwinColSelectListDataView<T>>,
+        HasDataView<T, Void, TwinColSelectDataView<T>> {
 
     /**
      * Defines the filter mode
@@ -99,7 +113,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private Div errorLabel = new Div();
     private Label label = new Label();
     private Label required = new Label("*");
-    private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
+    private final AtomicReference<DataProvider<T, ?>> dataProvider = new AtomicReference<>(
+            DataProvider.ofItems());
+    private int lastNotifiedDataSize = -1;
+    private volatile int lastFetchedDataSize = -1;
+    private SerializableConsumer<UI> sizeRequest;
 
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
@@ -199,7 +217,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      * @param anchor
      * @param checkBoxItem
      */
-    private void markRange(VerticalLayout list, Component anchor, Component checkBoxItem) {
+    private void markRange(VerticalLayout list, Component anchor,
+            Component checkBoxItem) {
         boolean marking = false;
         for (Component i : list.getChildren().collect(Collectors.toList())) {
             if (i == anchor || i == checkBoxItem) {
@@ -280,13 +299,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         recycleButton = new Button(VaadinIcon.RECYCLE.create());
         recycleButton.addClickListener(event -> {
             // true if any value is selected
-            boolean any2 = list2.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
-            // then set all to the negation (any? then all false, none? than all true)
+            boolean any2 = list2.getChildren()
+                    .anyMatch(c -> ((Checkbox) c).getValue());
+            // then set all to the negation (any? then all false, none? than all
+            // true)
             list2.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
                 checkbox.setValue(!any2);
             });
-            boolean any1 = list1.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
+            boolean any1 = list1.getChildren()
+                    .anyMatch(c -> ((Checkbox) c).getValue());
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
                 checkbox.setValue(!any1);
@@ -499,7 +521,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private void setErrorLabelStyles() {
-        errorLabel.addClassName("twincolselect-errorlabel");        
+        errorLabel.addClassName("twincolselect-errorlabel");
     }
 
     private void reset(boolean refresh) {
@@ -509,16 +531,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         }
         keyMapper.removeAll();
         list1.removeAll();
-        getDataProvider().fetch(new Query<>()).map(this::createCheckBox)
-                .forEach(checkbox -> {
-                    if (!this.getSelectedCheckboxItems()
-                            .anyMatch(selected -> checkbox.getItem()
-                                    .equals(selected.getItem()))) {
-                        list1.add(checkbox);
-                    } else {
+        synchronized (dataProvider) {
+            final AtomicInteger itemCounter = new AtomicInteger(0);
+            getDataProvider().fetch(new Query<>()).map(this::createCheckBox)
+                    .forEach(checkbox -> {
+                        if (!this.getSelectedCheckboxItems()
+                                .anyMatch(selected -> checkbox.getItem()
+                                        .equals(selected.getItem()))) {
+                            list1.add(checkbox);
+                        } else {
 
-                    }
-                });
+                        }
+                        itemCounter.incrementAndGet();
+                    });
+            lastFetchedDataSize = itemCounter.get();
+            if (sizeRequest == null) {
+                sizeRequest = ui -> {
+                    fireSizeEvent();
+                    sizeRequest = null;
+                };
+                // Size event is fired before client response so as to avoid
+                // multiple size change events during server round trips
+                runBeforeClientResponse(sizeRequest);
+            }
+        }
     }
 
     /**
@@ -732,9 +768,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         return errorLabel.isVisible();
     }
 
-    @Override
+    @Deprecated
     public void setDataProvider(DataProvider<T, ?> dataProvider) {
-        this.dataProvider = dataProvider;
+        this.dataProvider.set(dataProvider);
+        DataViewUtils.removeComponentFilterAndSortComparator(this);
         reset(true);
 
         setupDataProviderListener(dataProvider);
@@ -822,8 +859,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         moveItems(list1, list2);
     }
 
+    @Deprecated
     public DataProvider<T, ?> getDataProvider() {
-        return dataProvider;
+        return dataProvider.get();
     }
 
     private Object getItemId(T item) {
@@ -907,5 +945,103 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     public void setAddButtonIcon(Component icon) {
         addButton.setIcon(icon);
+    }
+
+    @Override
+    public TwinColSelectDataView<T> getGenericDataView() {
+        return new TwinColSelectDataView<>(this::getDataProvider, this,
+                this::identifierProviderChanged);
+    }
+
+    @Override
+    public TwinColSelectDataView<T> setItems(
+            DataProvider<T, Void> dataProvider) {
+        setDataProvider(dataProvider);
+        return getGenericDataView();
+    }
+
+    @Override
+    public TwinColSelectDataView<T> setItems(
+            InMemoryDataProvider<T> inMemoryDataProvider) {
+        DataProvider<T, Void> convertedDataProvider = new DataProviderWrapper<T, Void, SerializablePredicate<T>>(
+                inMemoryDataProvider) {
+            @Override
+            protected SerializablePredicate<T> getFilter(Query<T, Void> query) {
+                // Just ignore the query filter (Void) and apply the
+                // predicate only
+                return Optional.ofNullable(inMemoryDataProvider.getFilter())
+                        .orElse(item -> true);
+            }
+        };
+        return setItems(convertedDataProvider);
+    }
+
+    @Override
+    public TwinColSelectListDataView<T> getListDataView() {
+        return new TwinColSelectListDataView<>(this::getDataProvider, this,
+                this::identifierProviderChanged, (filter, sorting) -> reset(true));
+    }
+
+    @Override
+    public TwinColSelectListDataView<T> setItems(
+            ListDataProvider<T> dataProvider) {
+        setDataProvider(dataProvider);
+        return getListDataView();
+    }
+
+    public void setItems(Stream<T> streamOfItems) {
+        setItems(DataProvider.fromStream(streamOfItems));
+    }
+
+    @Override
+    protected boolean valueEquals(Set<T> value1, Set<T> value2) {
+        assert value1 != null && value2 != null;
+        if (value1.size() != value2.size()) {
+            return false;
+        }
+
+        if (getDataProvider() == null) {
+            return super.valueEquals(value1, value2);
+        }
+        IdentifierProvider<T> identifierProvider = getIdentifierProvider();
+        Set<Object> ids1 = value1.stream().map(identifierProvider)
+                .collect(Collectors.toSet());
+        Set<Object> ids2 = value2.stream().map(identifierProvider)
+                .collect(Collectors.toSet());
+        return ids1.equals(ids2);
+    }
+
+    @SuppressWarnings("unchecked")
+    private IdentifierProvider<T> getIdentifierProvider() {
+        IdentifierProvider<T> identifierProviderObject = ComponentUtil
+                .getData(this, IdentifierProvider.class);
+        if (identifierProviderObject == null) {
+            DataProvider<T, ?> dataProvider = getDataProvider();
+            if (dataProvider != null) {
+                return dataProvider::getId;
+            } else {
+                return IdentifierProvider.identity();
+            }
+        } else {
+            return identifierProviderObject;
+        }
+    }
+
+    private void identifierProviderChanged(
+            IdentifierProvider<T> identifierProvider) {
+        keyMapper.setIdentifierGetter(identifierProvider);
+    }
+
+    private void runBeforeClientResponse(SerializableConsumer<UI> command) {
+        getElement().getNode().runWhenAttached(ui -> ui
+                .beforeClientResponse(this, context -> command.accept(ui)));
+    }
+
+    private void fireSizeEvent() {
+        final int newSize = lastFetchedDataSize;
+        if (lastNotifiedDataSize != newSize) {
+            lastNotifiedDataSize = newSize;
+            fireEvent(new ItemCountChangeEvent<>(this, newSize, false));
+        }
     }
 }

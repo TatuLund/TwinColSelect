@@ -12,6 +12,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -43,35 +44,34 @@ public class View extends VerticalLayout {
         Binder<Bean> binder = new Binder<>();
         TwinColSelect<String> select = new TwinColSelect<>();
         select.setLabel("Do selection");
-        select.setItems("One", "Two", "Three", "Four", "Five", "Six", "Seven",
+        TwinColSelectListDataView<String> dataView = select.setItems("One", "Two", "Three", "Four", "Five", "Six", "Seven",
                 "Eight", "Nine", "Ten");
         // Set<String> set = new HashSet<>();
         // for (Integer i=1;i<101;i++) {
         // set.add("Item "+i);
         // }
         // select.setItems(set);
-        ListDataProvider<String> dp = (ListDataProvider<String>) select
-                .getDataProvider();
-        Set<String> set = dp.getItems().stream().collect(Collectors.toSet());
-        dp.setSortComparator((a, b) -> a.compareTo(b));
+//        ListDataProvider<String> dp = (ListDataProvider<String>) select
+//                .getDataProvider();
+//        Set<String> set = dp.getItems().stream().collect(Collectors.toSet());
+//        dp.setSortComparator((a, b) -> a.compareTo(b));
+        dataView.setSortComparator((a, b) -> a.compareTo(b));
         select.setHeight("350px");
         select.setWidth("500px");
-        Set<String> selection = new HashSet<>();
-        set.forEach(item -> {
-            if (item.contains("o")) {
-                selection.add(item);
-            }
-        });
+        Set<String> selection = dataView.getItems().filter(item -> item.contains("o")).collect(Collectors.toSet());
 
         Bean bean =  new Bean();
-        select.setValue(selection);
+        bean.setSelection(selection);
 
         binder.forField(select)
             .asRequired("Empty selection not allowed")
             .withValidator(sel -> sel.size() == 2 && sel.contains("Two") && sel.contains("Four"),"Selection needs to contain two and four")
             .bind(Bean::getSelection,Bean::setSelection);        
         binder.setBean(bean);
-        
+        dataView.addItemCountChangeListener(event -> {
+            Notification.show("Item count changed");
+        });
+
         select.addValueChangeListener(event -> {
             log.removeAll();
             log.addComponentAsFirst(new Span(("Value changed")));
@@ -80,9 +80,8 @@ public class View extends VerticalLayout {
         });
         Button refresh = new Button("Add/Refresh");
         refresh.addClickListener(event -> {
-            dp.getItems().add("An item " + newi);
+            dataView.addItem("An item " + newi);
             newi++;
-            dp.refreshAll();
         });
         Button clear = new Button("Clear");
         clear.addClickListener(event -> {
@@ -98,7 +97,7 @@ public class View extends VerticalLayout {
         });
         TextField filterField = new TextField("Filter");
         filterField.addValueChangeListener(event -> {
-            dp.setFilter(item -> item.toUpperCase()
+            dataView.setFilter(item -> item.toUpperCase()
                     .startsWith(event.getValue().toUpperCase()));
         });
         Checkbox filterMode = new Checkbox("Reset filter mode");
