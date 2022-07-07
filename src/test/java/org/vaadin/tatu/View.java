@@ -55,7 +55,7 @@ public class View extends VerticalLayout {
 //                .getDataProvider();
 //        Set<String> set = dp.getItems().stream().collect(Collectors.toSet());
 //        dp.setSortComparator((a, b) -> a.compareTo(b));
-        dataView.setSortComparator((a, b) -> a.compareTo(b));
+        
         select.setHeight("350px");
         select.setWidth("500px");
         Set<String> selection = dataView.getItems().filter(item -> item.contains("o")).collect(Collectors.toSet());
@@ -65,7 +65,7 @@ public class View extends VerticalLayout {
 
         binder.forField(select)
             .asRequired("Empty selection not allowed")
-            .withValidator(sel -> sel.size() == 2 && sel.contains("Two") && sel.contains("Four"),"Selection needs to contain two and four")
+            .withValidator(sel -> sel.contains("Two") && sel.contains("Four"),"Selection needs to contain two and four")
             .bind(Bean::getSelection,Bean::setSelection);        
         binder.setBean(bean);
         dataView.addItemCountChangeListener(event -> {
@@ -97,6 +97,8 @@ public class View extends VerticalLayout {
         });
         TextField filterField = new TextField("Filter");
         filterField.addValueChangeListener(event -> {
+//            dp.setFilter(item -> item.toUpperCase()
+//                    .startsWith(event.getValue().toUpperCase()));
             dataView.setFilter(item -> item.toUpperCase()
                     .startsWith(event.getValue().toUpperCase()));
         });
@@ -108,10 +110,18 @@ public class View extends VerticalLayout {
                 select.setFilterMode(FilterMode.ITEMS);
             }
         });
+        Checkbox sorting = new Checkbox("Sorting");
+        sorting.addValueChangeListener(event -> {
+        	if (event.getValue()) {
+        		dataView.setSortComparator((a, b) -> a.compareTo(b));
+        	} else {
+        		dataView.removeSorting();
+        	}
+        });
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(refresh, clear, clearTicks, readOnly, filterMode);
+        buttons.add(refresh, clear, clearTicks, readOnly, filterMode, sorting);
         add(filterField, select, buttons, log);
         setFlexGrow(1, log);
     }

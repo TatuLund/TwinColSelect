@@ -3,7 +3,7 @@
 
 # TwinColSelect
 
-Vaadin 14 Java version of TwinColSelect
+Vaadin 23 Java version of TwinColSelect
 
 TwinColSelect component, also known as list builder. It is a component for multiselection.
 
@@ -14,6 +14,15 @@ selection.
  The component also has drag and drop support.
 
 ## Release notes
+
+### Version 2.1.0
+- Fixed issue with buttons enabled when no data
+- Fixed issue with Filter and SortComparator not working via DataView
+- Fixed issue with sorting not done when moving items
+- Compiled with Java 11 for Vaadin 23
+
+### Version 2.0.0
+- Added DataView API support for Vaadin 17+
 
 ### Version 1.8.1
 - Fixed css that breaks with Vaadin 14.6.0
