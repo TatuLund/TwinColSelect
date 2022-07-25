@@ -21,9 +21,23 @@ vaadin-checkbox.checkbox-item[checked] {
 	transition: color 0.2s;
 	line-height: 1;
 	overflow: hidden;
-	white-space: owrap;
+	white-space: nowrap;
 	text-overflow: ellipsis;
 	position: relative;
 	max-width: 100%;
 	box-sizing: border-box;
+    padding-right: 1em;
+    padding-bottom: 0.5em;	
+    margin-left: calc(var(--lumo-border-radius-m) / 4);    
+}
+
+.twincolselect-label-styles::after {
+    content: var(--lumo-required-field-indicator, "\2022");
+    transition: opacity 0.2s;
+    opacity: var(--tcs-required-dot-opacity);
+    color: var(--lumo-primary-text-color);
+    right: 0;
+    width: 1em;
+    margin-left: 4px;
+    text-align: center;
 }

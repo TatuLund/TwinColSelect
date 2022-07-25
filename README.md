@@ -15,6 +15,9 @@ selection.
 
 ## Release notes
 
+### Version 2.2.0
+- Fix required indicator to be similar to other Vaadin components
+
 ### Version 2.1.0
 - Fixed issue with buttons enabled when no data
 - Fixed issue with Filter and SortComparator not working via DataView
