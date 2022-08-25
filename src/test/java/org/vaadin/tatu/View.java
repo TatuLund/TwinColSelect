@@ -24,6 +24,7 @@ import com.vaadin.flow.router.Route;
 public class View extends VerticalLayout {
     int newi = 1000;
     VerticalLayout log = new VerticalLayout();
+    TwinColSelectListDataView<String> dataView = null;
 
     public class Bean {
         private Set<String> selection;
@@ -35,8 +36,8 @@ public class View extends VerticalLayout {
         public void setSelection(Set<String> selection) {
             this.selection = selection;
         }
-     };
-    
+    };
+
     public View() {
         this.setSizeFull();
         // Un-comment to test right to left mode
@@ -44,33 +45,38 @@ public class View extends VerticalLayout {
         Binder<Bean> binder = new Binder<>();
         TwinColSelect<String> select = new TwinColSelect<>();
         select.setLabel("Do selection");
-        TwinColSelectListDataView<String> dataView = select.setItems("One", "Two", "Three", "Four", "Five", "Six", "Seven",
-                "Eight", "Nine", "Ten");
+        Button setItems = new Button("Set");
+        Bean bean = new Bean();
+        setItems.addClickListener(event -> {
+            dataView = select.setItems("One",
+                    "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
+                    "Nine", "Ten");
+            Set<String> selection = dataView.getItems()
+                    .filter(item -> item.contains("o")).collect(Collectors.toSet());
+            bean.setSelection(selection);
+            dataView.addItemCountChangeListener(e -> {
+                Notification.show("Item count changed");
+            });
+        });
         // Set<String> set = new HashSet<>();
         // for (Integer i=1;i<101;i++) {
         // set.add("Item "+i);
         // }
         // select.setItems(set);
-//        ListDataProvider<String> dp = (ListDataProvider<String>) select
-//                .getDataProvider();
-//        Set<String> set = dp.getItems().stream().collect(Collectors.toSet());
-//        dp.setSortComparator((a, b) -> a.compareTo(b));
-        
+        // ListDataProvider<String> dp = (ListDataProvider<String>) select
+        // .getDataProvider();
+        // Set<String> set = dp.getItems().stream().collect(Collectors.toSet());
+        // dp.setSortComparator((a, b) -> a.compareTo(b));
+
         select.setHeight("350px");
         select.setWidth("500px");
-        Set<String> selection = dataView.getItems().filter(item -> item.contains("o")).collect(Collectors.toSet());
 
-        Bean bean =  new Bean();
-        bean.setSelection(selection);
-
-        binder.forField(select)
-            .asRequired("Empty selection not allowed")
-            .withValidator(sel -> sel.contains("Two") && sel.contains("Four"),"Selection needs to contain two and four")
-            .bind(Bean::getSelection,Bean::setSelection);        
+        binder.forField(select).asRequired("Empty selection not allowed")
+                .withValidator(
+                        sel -> sel.contains("Two") && sel.contains("Four"),
+                        "Selection needs to contain two and four")
+                .bind(Bean::getSelection, Bean::setSelection);
         binder.setBean(bean);
-        dataView.addItemCountChangeListener(event -> {
-            Notification.show("Item count changed");
-        });
 
         select.addValueChangeListener(event -> {
             log.removeAll();
@@ -97,8 +103,8 @@ public class View extends VerticalLayout {
         });
         TextField filterField = new TextField("Filter");
         filterField.addValueChangeListener(event -> {
-//            dp.setFilter(item -> item.toUpperCase()
-//                    .startsWith(event.getValue().toUpperCase()));
+            // dp.setFilter(item -> item.toUpperCase()
+            // .startsWith(event.getValue().toUpperCase()));
             dataView.setFilter(item -> item.toUpperCase()
                     .startsWith(event.getValue().toUpperCase()));
         });
@@ -112,16 +118,16 @@ public class View extends VerticalLayout {
         });
         Checkbox sorting = new Checkbox("Sorting");
         sorting.addValueChangeListener(event -> {
-        	if (event.getValue()) {
-        		dataView.setSortComparator((a, b) -> a.compareTo(b));
-        	} else {
-        		dataView.removeSorting();
-        	}
+            if (event.getValue()) {
+                dataView.setSortComparator((a, b) -> a.compareTo(b));
+            } else {
+                dataView.removeSorting();
+            }
         });
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(refresh, clear, clearTicks, readOnly, filterMode, sorting);
+        buttons.add(setItems, refresh, clear, clearTicks, readOnly, filterMode, sorting);
         add(filterField, select, buttons, log);
         setFlexGrow(1, log);
     }

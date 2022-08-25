@@ -578,6 +578,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 // multiple size change events during server round trips
                 runBeforeClientResponse(sizeRequest);
             }
+            updateButtons();
         }
     }
 
@@ -692,17 +693,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void setInvalid(boolean invalid) {
-        if (invalid) {
-            list2.getStyle().set("border", LIST_BORDER_ERROR);
-            list2.getStyle().set("background", LIST_BACKGROUND_ERROR);
-            errorLabel.setText(errorMessage);
-            errorLabel.setVisible(true);
-        } else {
-            list2.getStyle().set("border", LIST_BORDER);
-            list2.getStyle().set("background", LIST_BACKGROUND);
-            errorLabel.setVisible(false);
-        }
-
+      if (invalid) {
+        list2.getStyle().set("border",LIST_BORDER_ERROR);
+        list2.getStyle().set("background",LIST_BACKGROUND_ERROR);
+        errorLabel.setVisible(true);
+      } else {
+        list2.getStyle().set("border",LIST_BORDER);
+        list2.getStyle().set("background",LIST_BACKGROUND);
+        errorLabel.setVisible(false);
+      }
     }
 
     @Override
@@ -842,9 +841,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void setErrorMessage(String errorMessage) {
-        errorLabel.setVisible(true);
         this.errorMessage = errorMessage;
-    }
+        errorLabel.setText(errorMessage);
+      }
 
     /**
      * Gets the current error message from the twincolselect.
