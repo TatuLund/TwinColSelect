@@ -43,6 +43,8 @@ public class View extends VerticalLayout {
         // Un-comment to test right to left mode
         // UI.getCurrent().setDirection(Direction.RIGHT_TO_LEFT);
         Binder<Bean> binder = new Binder<>();
+        Checkbox sorting = new Checkbox("Sorting");
+        sorting.setEnabled(false);
         TwinColSelect<String> select = new TwinColSelect<>();
         select.setLabel("Do selection");
         Button setItems = new Button("Set");
@@ -57,6 +59,7 @@ public class View extends VerticalLayout {
             dataView.addItemCountChangeListener(e -> {
                 Notification.show("Item count changed");
             });
+            sorting.setEnabled(true);
         });
         // Set<String> set = new HashSet<>();
         // for (Integer i=1;i<101;i++) {
@@ -81,8 +84,10 @@ public class View extends VerticalLayout {
         select.addValueChangeListener(event -> {
             log.removeAll();
             log.addComponentAsFirst(new Span(("Value changed")));
-            event.getValue().forEach(item -> log
-                    .addComponentAsFirst(new Span(item + " selected!")));
+            String value = event.getValue().stream().collect(Collectors.joining(","));
+            Span valueSpan = new Span(value + " selected!");
+            valueSpan.setId("value");
+            log.addComponentAsFirst(valueSpan);
         });
         Button refresh = new Button("Add/Refresh");
         refresh.addClickListener(event -> {
@@ -116,7 +121,7 @@ public class View extends VerticalLayout {
                 select.setFilterMode(FilterMode.ITEMS);
             }
         });
-        Checkbox sorting = new Checkbox("Sorting");
+
         sorting.addValueChangeListener(event -> {
             if (event.getValue()) {
                 dataView.setSortComparator((a, b) -> a.compareTo(b));

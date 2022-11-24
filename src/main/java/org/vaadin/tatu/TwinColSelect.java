@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -57,6 +58,7 @@ import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -77,7 +79,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            The bean type in TwinColSelect
  */
-@Tag("div")
+@Tag("twin-col-select")
 @CssImport(value = "./twincolselect.css")
 @CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
@@ -113,7 +115,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private String errorMessage = "";
     private Div errorLabel = new Div();
     private Label label = new Label();
-//    private Label required = new Label("*");
     private final AtomicReference<DataProvider<T, ?>> dataProvider = new AtomicReference<>(
             DataProvider.ofItems());
     private int lastNotifiedDataSize = -1;
@@ -175,7 +176,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                         list2.add(this);
                         DataProvider<T, ?> dp = (DataProvider<T, ?>) TwinColSelect.this
                                 .getDataProvider();
-                        if (dp instanceof InMemoryDataProvider) {
+                        if (dp instanceof InMemoryDataProvider && DataViewUtils
+                                .getComponentSortComparator(TwinColSelect.this)
+                                .isPresent()) {
                             InMemoryDataProvider dataProvider = (InMemoryDataProvider<T>) dp;
                             TwinColSelect.this.sortDestinationList(list2,
                                     dataProvider);
@@ -256,6 +259,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     protected TwinColSelect(Set<T> initialValue) {
         super(initialValue);
+        // getElement().attachShadow();
+        // ShadowRoot shadow = getElement().getShadowRoot().get();
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -270,7 +275,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         indicators.setSpacing(false);
         indicators.setMargin(false);
         label.setVisible(false);
-        label.getElement().getStyle().set("--tcs-required-dot-opacity","0");
+        label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
         indicators.add(label);
         setLabelStyles(label);
         setSizeFull();
@@ -339,6 +344,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         layout.setFlexGrow(1, list1, list2);
         layout.add(list1, buttons, list2);
         updateButtons();
+        // shadow.appendChild(indicators.getElement(),layout.getElement(),errorLabel.getElement());
         add(indicators, layout, errorLabel);
     }
 
@@ -391,9 +397,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
         this.requiredIndicatorVisible = requiredIndicatorVisible;
         if (requiredIndicatorVisible) {
-            label.getElement().getStyle().set("--tcs-required-dot-opacity","1");
+            label.getElement().getStyle().set("--tcs-required-dot-opacity",
+                    "1");
         } else {
-            label.getElement().getStyle().set("--tcs-required-dot-opacity","0");            
+            label.getElement().getStyle().set("--tcs-required-dot-opacity",
+                    "0");
         }
     }
 
@@ -418,7 +426,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             }
         });
         DataProvider<T, ?> dp = this.getDataProvider();
-        if (dp instanceof InMemoryDataProvider) {
+        if (dp instanceof InMemoryDataProvider
+                && DataViewUtils.getComponentSortComparator(this).isPresent()) {
             InMemoryDataProvider<T> dataProvider = (InMemoryDataProvider<T>) dp;
             sortDestinationList(list2, dataProvider);
         }
@@ -556,6 +565,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
             final Optional<SerializableComparator<Object>> sorting = DataViewUtils
                     .getComponentSortComparator(this);
+
             getDataProvider().fetch(DataViewUtils.getQuery(this))
                     .map(item -> createCheckBox((T) item)).forEach(checkbox -> {
                         CheckBoxItem<T> checkBoxItem = (TwinColSelect<T>.CheckBoxItem<T>) checkbox;
@@ -693,15 +703,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void setInvalid(boolean invalid) {
-      if (invalid) {
-        list2.getStyle().set("border",LIST_BORDER_ERROR);
-        list2.getStyle().set("background",LIST_BACKGROUND_ERROR);
-        errorLabel.setVisible(true);
-      } else {
-        list2.getStyle().set("border",LIST_BORDER);
-        list2.getStyle().set("background",LIST_BACKGROUND);
-        errorLabel.setVisible(false);
-      }
+        if (invalid) {
+            list2.getStyle().set("border", LIST_BORDER_ERROR);
+            list2.getStyle().set("background", LIST_BACKGROUND_ERROR);
+            errorLabel.setVisible(true);
+        } else {
+            list2.getStyle().set("border", LIST_BORDER);
+            list2.getStyle().set("background", LIST_BACKGROUND);
+            errorLabel.setVisible(false);
+        }
     }
 
     @Override
@@ -781,7 +791,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     @Override
     public void setValue(Set<T> value) {
         Objects.requireNonNull(value,
-                "Cannot set a null value to checkbox group. "
+                "Cannot set a null value to twincolselect. "
                         + "Use the clear-method to reset the component's value to an empty set.");
         super.setValue(value);
     }
@@ -822,20 +832,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public Set<T> getSelectedItems() {
-        Set<T> set = new HashSet<T>();
-
-        list2.getChildren().forEach(comp -> {
-            CheckBoxItem<T> checkbox = (CheckBoxItem) comp;
-            set.add(checkbox.getItem());
-        });
-        return set;
+        return Collections.unmodifiableSet(new LinkedHashSet<>(list2
+                .getChildren().map(comp -> ((CheckBoxItem<T>) comp).getItem())
+                .collect(Collectors.toList())));
     }
 
     @Override
     public void updateSelection(Set<T> addedItems, Set<T> removedItems) {
-        Set<T> value = new HashSet<>(getValue());
-        value.addAll(addedItems);
+        Set<T> value = new LinkedHashSet<>(getValue());
         value.removeAll(removedItems);
+        value.addAll(addedItems);
         setValue(value);
     }
 
@@ -843,7 +849,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
         errorLabel.setText(errorMessage);
-      }
+    }
 
     /**
      * Gets the current error message from the twincolselect.
