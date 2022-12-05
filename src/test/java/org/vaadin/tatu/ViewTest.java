@@ -40,9 +40,9 @@ public class ViewTest extends UIUnit4Test {
 
         // Pick items
         test($(Checkbox.class).withCaption("Two").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
         test($(Checkbox.class).withCaption("Four").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
 
         // Selection follows the order
         String value = test($(Span.class).id("value")).getText();
@@ -68,14 +68,14 @@ public class ViewTest extends UIUnit4Test {
         // Pick items
         test($(Checkbox.class).withCaption("Two").first()).click();
         test($(Checkbox.class).withCaption("Four").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
 
         List<Checkbox> selected = $(Checkbox.class,
                 $(VerticalLayout.class).withClassName("value").first())
                         .withValue(true).all();
         Assert.assertEquals(2, selected.size());
 
-        test($(Button.class).all().get(4)).click();
+        test($(Button.class).atIndex(5)).click();
         options = $(Checkbox.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
@@ -102,27 +102,27 @@ public class ViewTest extends UIUnit4Test {
                         .first()).getText());
 
         // Assert that button states are correct
-        Assert.assertFalse(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
 
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
 
-        // Assert that optiosn have 10 items
+        // Assert that options have 10 items
         Assert.assertEquals(10, $(VerticalLayout.class).withClassName("options")
                 .first().getComponentCount());
         Assert.assertEquals(0, $(VerticalLayout.class).withClassName("value")
                 .first().getComponentCount());
 
         // Assert button states
-        Assert.assertTrue(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
     }
 
     @Test
@@ -140,11 +140,11 @@ public class ViewTest extends UIUnit4Test {
         options.forEach(box -> Assert.assertFalse(test(box).isUsable()));
 
         // Assert that buttons are inert
-        Assert.assertFalse(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(5)).isUsable());
 
         // Put the TwinColSelect back in normal state
         test($(Button.class).withCaption("Read only").first()).click();
@@ -153,11 +153,11 @@ public class ViewTest extends UIUnit4Test {
         options.forEach(box -> Assert.assertTrue(test(box).isUsable()));
 
         // Assert that button states are correct
-        Assert.assertTrue(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
     }
 
     @Test
@@ -166,13 +166,13 @@ public class ViewTest extends UIUnit4Test {
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
 
-        Assert.assertTrue(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
 
-        test($(Button.class).all().get(0)).click();
+        test($(Button.class).atIndex(1)).click();
 
         // Assert that span containing the value prints out right value
         String value = test($(Span.class).id("value")).getText();
@@ -187,14 +187,14 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
 
         // Assert button states are correct
-        Assert.assertFalse(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
 
         // De-select
-        test($(Button.class).all().get(3)).click();
+        test($(Button.class).atIndex(4)).click();
 
         // Assert value is empty
         Assert.assertEquals(10, $(VerticalLayout.class).withClassName("options")
@@ -203,11 +203,11 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
 
         // Assert button states are correct
-        Assert.assertTrue(test($(Button.class).all().get(0)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).all().get(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).all().get(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
 
         // Assert that error text is correct as the field was requited
         Div errorLabel = $(Div.class)
@@ -244,7 +244,7 @@ public class ViewTest extends UIUnit4Test {
         // Pick items
         test($(Checkbox.class).withCaption("One").first()).click();
         test($(Checkbox.class).withCaption("Three").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
 
         // Assert the error label as the selection does not match validator
         Div errorLabel = $(Div.class)
@@ -255,7 +255,7 @@ public class ViewTest extends UIUnit4Test {
         // Pick items
         test($(Checkbox.class).withCaption("Two").first()).click();
         test($(Checkbox.class).withCaption("Four").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
 
         // Assert that error label is not visible as validator passes
         Assert.assertFalse(errorLabel.isVisible());
@@ -269,11 +269,11 @@ public class ViewTest extends UIUnit4Test {
 
         // Pick three items one at the time
         test($(Checkbox.class).withCaption("Five").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
         test($(Checkbox.class).withCaption("Two").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
         test($(Checkbox.class).withCaption("Four").first()).click();
-        test($(Button.class).all().get(1)).click();
+        test($(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out in correct order
         String value = test($(Span.class).id("value")).getText();
