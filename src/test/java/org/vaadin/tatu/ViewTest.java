@@ -10,6 +10,7 @@ import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -110,6 +111,8 @@ public class ViewTest extends UIUnit4Test {
 
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
+        Assert.assertEquals("Item count changed",
+                test($(Notification.class).last()).getText());
 
         // Assert that options have 10 items
         Assert.assertEquals(10, $(VerticalLayout.class).withClassName("options")
@@ -185,6 +188,10 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
         Assert.assertEquals(10, $(VerticalLayout.class).withClassName("value")
                 .first().getComponentCount());
+        List<Checkbox> selected = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("value").first())
+                        .withValue(true).all();
+        Assert.assertEquals(0, selected.size());
 
         // Assert button states are correct
         Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
@@ -214,7 +221,45 @@ public class ViewTest extends UIUnit4Test {
                 .withAttribute("class", "twincolselect-errorlabel").first();
         Assert.assertEquals("Empty selection not allowed",
                 test(errorLabel).getText());
+    }
 
+    @Test
+    public void selectAll_deselectOne() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+
+        test($(Button.class).atIndex(1)).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(
+                "One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
+                value);
+
+        // Options is empty and value has 10 items
+        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(10, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+
+        test($(Checkbox.class).withCaption("One").first()).click();
+        test($(Button.class).atIndex(3)).click();
+
+        // Assert value has nine items
+        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+
+        value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(
+                "Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
+                value);
+        List<Checkbox> tickedOptions = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("options").first())
+                        .withValue(true).all();
+        Assert.assertEquals(1, tickedOptions.size());
     }
 
     @Test
@@ -288,4 +333,51 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Two", selected.get(1).getLabel());
         Assert.assertEquals("Four", selected.get(2).getLabel());
     }
+
+    @Test
+    public void clearTicks() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+
+        // Tick items
+        test($(Checkbox.class).withCaption("Two").first()).click();
+        test($(Checkbox.class).withCaption("Four").first()).click();
+
+        List<Checkbox> ticked = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("options").first())
+                        .withValue(true).all();
+
+        Assert.assertEquals(2, ticked.size());
+
+        test($(Button.class).withCaption("Clear Ticks (BOTH)").first()).click();
+
+        ticked = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("options").first())
+                        .withValue(true).all();
+
+        Assert.assertEquals(0, ticked.size());
+    }
+
+    @Test
+    public void selectOne() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+
+        test($(Checkbox.class).withCaption("One").first()).click();
+        test($(Button.class).atIndex(2)).click();
+
+        // Assert that span containing the value prints out in correct order
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("One selected!", value);
+
+        // Assert button states are correct
+        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(3)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(4)).isUsable());
+        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+    }
+
 }

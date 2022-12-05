@@ -1,6 +1,9 @@
 package org.vaadin.tatu;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -95,6 +98,10 @@ public class View extends VerticalLayout {
         });
         Button refresh = new Button("Add/Refresh");
         refresh.addClickListener(event -> {
+            if (dataView == null) {
+                List<String> items = new ArrayList<>();
+                dataView = select.setItems(items);
+            }
             dataView.addItem("An item " + newi);
             newi++;
         });
