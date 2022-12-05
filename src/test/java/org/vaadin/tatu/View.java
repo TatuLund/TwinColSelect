@@ -8,6 +8,7 @@ import org.vaadin.tatu.TwinColSelect.ColType;
 import org.vaadin.tatu.TwinColSelect.FilterMode;
 
 import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -15,6 +16,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.ListDataProvider;
@@ -50,11 +53,11 @@ public class View extends VerticalLayout {
         Button setItems = new Button("Set");
         Bean bean = new Bean();
         setItems.addClickListener(event -> {
-            dataView = select.setItems("One",
-                    "Two", "Three", "Four", "Five", "Six", "Seven", "Eight",
-                    "Nine", "Ten");
+            dataView = select.setItems("One", "Two", "Three", "Four", "Five",
+                    "Six", "Seven", "Eight", "Nine", "Ten");
             Set<String> selection = dataView.getItems()
-                    .filter(item -> item.contains("o")).collect(Collectors.toSet());
+                    .filter(item -> item.contains("o"))
+                    .collect(Collectors.toSet());
             bean.setSelection(selection);
             dataView.addItemCountChangeListener(e -> {
                 Notification.show("Item count changed");
@@ -84,7 +87,8 @@ public class View extends VerticalLayout {
         select.addValueChangeListener(event -> {
             log.removeAll();
             log.addComponentAsFirst(new Span(("Value changed")));
-            String value = event.getValue().stream().collect(Collectors.joining(","));
+            String value = event.getValue().stream()
+                    .collect(Collectors.joining(","));
             Span valueSpan = new Span(value + " selected!");
             valueSpan.setId("value");
             log.addComponentAsFirst(valueSpan);
@@ -132,8 +136,10 @@ public class View extends VerticalLayout {
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(setItems, refresh, clear, clearTicks, readOnly, filterMode, sorting);
+        buttons.add(setItems, refresh, clear, clearTicks, readOnly, filterMode,
+                sorting);
         add(filterField, select, buttons, log);
         setFlexGrow(1, log);
     }
+
 }

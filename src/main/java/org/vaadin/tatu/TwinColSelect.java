@@ -279,6 +279,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         indicators.add(label);
         setLabelStyles(label);
         setSizeFull();
+        list1.addClassName("options");
+        list2.addClassName("value");
         setupList(list1);
         setupList(list2);
         allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
@@ -905,11 +907,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         super.setReadOnly(readOnly);
         updateReadOnlyStyles(readOnly, list1);
         updateReadOnlyStyles(readOnly, list2);
-        addButton.setEnabled(!readOnly);
-        allButton.setEnabled(!readOnly);
-        removeButton.setEnabled(!readOnly);
-        clearButton.setEnabled(!readOnly);
-        recycleButton.setEnabled(!readOnly);
+        if (readOnly) {
+            addButton.setEnabled(false);
+            allButton.setEnabled(false);
+            removeButton.setEnabled(false);
+            clearButton.setEnabled(false);
+            recycleButton.setEnabled(false);
+        } else {
+            updateButtons();
+            recycleButton.setEnabled(true);
+        }
     }
 
     private void updateReadOnlyStyles(boolean readOnly, VerticalLayout list) {

@@ -15,6 +15,15 @@ selection.
 
 ## Release notes
 
+### Version 2.2.3
+- Correct button states after setting readonly false
+
+### Version 2.2.2
+- Preseve order of selection when comparator is not set
+
+### Version 2.2.1
+- Fix issues with buttons
+
 ### Version 2.2.0
 - Fix required indicator to be similar to other Vaadin components
 
