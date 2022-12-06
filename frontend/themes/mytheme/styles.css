@@ -1,0 +1,37 @@
+twin-col-select[theme~="styled"] {
+	--lumo-contrast-10pct: aliceblue;
+	--lumo-error-color: brown;
+	--lumo-error-text-color: brown;
+	--lumo-error-color-10pct: antiquewhite;
+}
+
+twin-col-select[theme~="styled"] .value {
+	box-shadow: var(--lumo-box-shadow-m);
+}
+
+twin-col-select[theme~="styled"] .options {
+	box-shadow: var(--lumo-box-shadow-m);
+}
+
+twin-col-select[theme~="styled"] vaadin-button {
+	box-shadow: var(--lumo-box-shadow-m);
+	color: cadetblue;
+    background: aliceblue;
+    border: 1px solid black;
+}
+
+twin-col-select[theme~="styled"] vaadin-checkbox {
+	--lumo-primary-color: cadetblue;
+}
+
+twin-col-select[theme~="styled"] vaadin-checkbox[checked] label {
+	color: white;
+}
+
+twin-col-select[theme~="styled"] {
+	--lumo-primary-color: black;
+}
+
+twin-col-select[theme~="styled"] label {
+	color: darkcyan;
+}

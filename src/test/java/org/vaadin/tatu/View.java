@@ -19,15 +19,18 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.theme.Theme;
 
 @Route("")
-public class View extends VerticalLayout {
+@Theme("mytheme")
+public class View extends VerticalLayout implements AppShellConfigurator {
     int newi = 1000;
     VerticalLayout log = new VerticalLayout();
     TwinColSelectListDataView<String> dataView = null;
@@ -140,11 +143,21 @@ public class View extends VerticalLayout {
                 dataView.removeSorting();
             }
         });
+
+        Checkbox styled = new Checkbox("Styled");
+        styled.addValueChangeListener(event -> {
+            if (event.getValue()) {
+                select.getElement().getThemeList().add("styled");
+            } else {
+                select.getElement().getThemeList().remove("styled");
+            }
+        });
+
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons = new HorizontalLayout();
         buttons.add(setItems, refresh, clear, clearTicks, readOnly, filterMode,
-                sorting);
+                sorting, styled);
         add(filterField, select, buttons, log);
         setFlexGrow(1, log);
     }
