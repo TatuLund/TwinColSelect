@@ -19,6 +19,10 @@ it using UI Unit Test feature that came in Vaadin 23.2.
 
 See: https://github.com/TatuLund/TwinColSelect/blob/nextlts/src/test/java/org/vaadin/tatu/ViewTest.java
 
+There is CSS styling example in
+
+https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/styles.css
+
 ## Release notes
 
 ### Version 2.2.3
