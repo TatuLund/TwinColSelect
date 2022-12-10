@@ -11,7 +11,13 @@ This is component consists of two lists. You can move items from the other list 
 master list and backed by DataProvider. The right list is the selection list and reflects the value of the
 selection.
  
- The component also has drag and drop support.
+The component also has drag and drop support.
+
+This add-on component is also a demo case on how to create a complex custom field as server side 
+composition using Java. As the logic is fully implemented in Java, it is also possible to verify 
+it using UI Unit Test feature that came in Vaadin 23.2. 
+
+See: https://github.com/TatuLund/TwinColSelect/blob/nextlts/src/test/java/org/vaadin/tatu/ViewTest.java
 
 ## Release notes
 
