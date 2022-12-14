@@ -61,6 +61,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
@@ -140,6 +141,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private Button removeButton;
     private Button clearButton;
     private Button recycleButton;
+
+    private TwinColSelectI18n i18n;
 
     private boolean requiredIndicatorVisible;
 
@@ -452,6 +455,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 removeButton.setEnabled(true);
                 clearButton.setEnabled(true);
             }
+            addButton.setTooltipText(
+                    i18n != null ? i18n.getAddToSelected() : null);
+            allButton.setTooltipText(
+                    i18n != null ? i18n.getAddAllToSelected() : null);
+            removeButton.setTooltipText(
+                    i18n != null ? i18n.getRemoveFromSelected() : null);
+            clearButton.setTooltipText(
+                    i18n != null ? i18n.getRemoveAllFromSelected() : null);
+            recycleButton.setTooltipText(
+                    i18n != null ? i18n.getToggleSelection() : null);
+            addButton.addThemeName("icon");
+            allButton.addThemeName("icon");
+            removeButton.addThemeName("icon");
+            clearButton.addThemeName("icon");
         }
     }
 
@@ -460,6 +477,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private FilterMode filterMode = FilterMode.ITEMS;
 
     private CheckBoxItem<T> anchorItem = null;
+
+    private SerializableFunction<T, String> tooltipGenerator;
 
     private void setAnchor(Component checkBoxItem) {
         anchorItem = (CheckBoxItem<T>) checkBoxItem;
@@ -611,6 +630,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     /**
+     * Sets the tooltip generator that is used to produce the tooltips shown in
+     * the twincolselect for each item. By default,
+     * {@link String#valueOf(Object)} is used.
+     *
+     * @param tooltipGenerator
+     *            the item label provider to use, set null to disable tooltips.
+     */
+    public void setTooltipGenerator(
+            SerializableFunction<T, String> tooltipGenerator) {
+        this.tooltipGenerator = tooltipGenerator;
+        reset(true);
+    }
+
+    /**
      * Sets the item enabled predicate for this twincolselect. The predicate is
      * applied to each item to determine whether the item should be enabled
      * ({@code true}) or disabled ({@code false}). Disabled items are displayed
@@ -634,6 +667,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      */
     public ItemLabelGenerator<T> getItemLabelGenerator() {
         return itemLabelGenerator;
+    }
+
+    /**
+     * Gets the tooltip generator that is used to produce the strings shown in
+     * the twincolselect for each item.
+     *
+     * @return the tooltip generator used
+     */
+    public SerializableFunction<T, String> getTooltipGenerator() {
+        return tooltipGenerator;
     }
 
     /**
@@ -682,6 +725,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private void updateCheckbox(CheckBoxItem<T> checkbox) {
         checkbox.setLabel(getItemLabelGenerator().apply(checkbox.getItem()));
+        checkbox.setTooltipText(getTooltipGenerator() != null
+                ? getTooltipGenerator().apply(checkbox.getItem())
+                : null);
         updateEnabled(checkbox);
     }
 
@@ -1079,6 +1125,87 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         if (lastNotifiedDataSize != newSize) {
             lastNotifiedDataSize = newSize;
             fireEvent(new ItemCountChangeEvent<>(this, newSize, false));
+        }
+    }
+
+    /**
+     * Sets the internationalization properties (texts used for button tooltips)
+     * for this component.
+     *
+     * @param i18n
+     *            the internationalized properties, null to disable all
+     *            tooltips.
+     */
+    public void setI18n(TwinColSelectI18n i18n) {
+        this.i18n = i18n;
+        updateButtons();
+    }
+
+    /**
+     * Gets the internationalization object previously set for this component.
+     *
+     * @return the i18n object. It will be <code>null</code>, If the i18n
+     *         properties weren't set.
+     */
+    public TwinColSelectI18n getI18n() {
+        return i18n;
+    }
+
+    public static class TwinColSelectI18n implements Serializable {
+        private String addAllToSelected;
+        private String removeAllFromSelected;
+        private String toggleSelection;
+        private String addToSelected;
+        private String removeFromSelected;
+
+        public String getAddAllToSelected() {
+            return addAllToSelected;
+        }
+
+        public void setAddAllToSelected(String addAllToSelected) {
+            this.addAllToSelected = addAllToSelected;
+        }
+
+        public String getRemoveAllFromSelected() {
+            return removeAllFromSelected;
+        }
+
+        public void setRemoveAllFromSelected(String removeAllFromSelected) {
+            this.removeAllFromSelected = removeAllFromSelected;
+        }
+
+        public String getToggleSelection() {
+            return toggleSelection;
+        }
+
+        public void setToggleSelection(String toggleSelection) {
+            this.toggleSelection = toggleSelection;
+        }
+
+        public String getAddToSelected() {
+            return addToSelected;
+        }
+
+        public void setAddToSelected(String addToSelected) {
+            this.addToSelected = addToSelected;
+        }
+
+        public String getRemoveFromSelected() {
+            return removeFromSelected;
+        }
+
+        public void setRemoveFromSelected(String removeFromSelected) {
+            this.removeFromSelected = removeFromSelected;
+        }
+
+        public static TwinColSelectI18n getDefault() {
+            TwinColSelectI18n english = new TwinColSelectI18n();
+            english.setToggleSelection("Toggle selection");
+            english.setRemoveAllFromSelected("Remove all from selected");
+            english.setRemoveFromSelected("Remove from selected");
+            english.setAddToSelected("Add to selected");
+            english.setAddAllToSelected("Add all to selected");
+            return english;
         }
     }
 }

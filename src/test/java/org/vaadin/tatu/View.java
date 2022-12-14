@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.vaadin.tatu.TwinColSelect.ColType;
 import org.vaadin.tatu.TwinColSelect.FilterMode;
+import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.Focusable;
@@ -82,7 +83,10 @@ public class View extends VerticalLayout implements AppShellConfigurator {
 
         select.setHeight("350px");
         select.setWidth("500px");
+        select.setTooltipGenerator(item -> "This is item "+item);
 
+        select.setI18n(TwinColSelectI18n.getDefault());
+        
         binder.forField(select).asRequired("Empty selection not allowed")
                 .withValidator(
                         sel -> sel.contains("Two") && sel.contains("Four"),
