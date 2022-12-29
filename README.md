@@ -25,6 +25,9 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
+### Version 2.3.0
+- Add API's to set tooltips for items and buttons, requires Vaadin 23.3.0 or newer.
+
 ### Version 2.2.3
 - Correct button states after setting readonly false
 
