@@ -2,6 +2,9 @@ name: Java CI
 
 on: [push]
 
+env:
+  VAADIN_PRO_KEY: pro-3e7ff8bf-4287-40a5-bc8e-42df8a9537f2
+
 jobs:
   build:
     runs-on: ubuntu-latest
