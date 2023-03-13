@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -57,6 +58,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.function.SerializableComparator;
@@ -105,6 +107,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         RESETVALUE;
     }
 
+    public enum PickMode {
+        /**
+         * Pick items with single click to selection.
+         */
+        SINGLE,
+        /**
+         * Pick items with double click to selection.
+         */
+        DOUBLE;
+    }
+
     private static final String VALUE = "value";
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>(this::getItemId);
@@ -146,6 +159,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private boolean requiredIndicatorVisible;
 
+    private PickMode pickMode = PickMode.DOUBLE;
+
     private class CheckBoxItem<T> extends Checkbox implements ItemComponent<T> {
 
         private final T item;
@@ -171,37 +186,32 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 list1.getStyle().set("background", LIST_BACKGROUND);
                 list2.getStyle().set("background", LIST_BACKGROUND);
             });
+            DomListenerRegistration reg = getElement().addEventListener("keyup",
+                    event -> {
+                        if (event.getEventData()
+                                .getNumber("event.keyCode") == 40) {
+                            focusNext();
+                        } else if (event.getEventData()
+                                .getNumber("event.keyCode") == 38) {
+                            focusPrevious();
+                        } else if (event.getEventData()
+                                .getNumber("event.keyCode") == 13) {
+                            doSwapItems();
+                        }
+                    });
+            reg.addEventData("event.keyCode");
             addClickListener(click -> {
                 // handle doubleclick list swap
-                if (click.getClickCount() == 2) {
-                    if (this.getParent().get() == list1) {
-                        list1.remove(this);
-                        list2.add(this);
-                        DataProvider<T, ?> dp = (DataProvider<T, ?>) TwinColSelect.this
-                                .getDataProvider();
-                        if (dp instanceof InMemoryDataProvider && DataViewUtils
-                                .getComponentSortComparator(TwinColSelect.this)
-                                .isPresent()) {
-                            InMemoryDataProvider dataProvider = (InMemoryDataProvider<T>) dp;
-                            TwinColSelect.this.sortDestinationList(list2,
-                                    dataProvider);
-                        }
-                    } else {
-                        list2.remove(this);
-                        list1.add(this);
-                        if (DataViewUtils
-                                .getComponentSortComparator(TwinColSelect.this)
-                                .isPresent()) {
-                            TwinColSelect.this.reset(true);
-                        }
-                    }
-                    updateButtons();
-                    TwinColSelect.this.setModelValue(getSelectedItems(), true);
+                if ((pickMode == PickMode.DOUBLE && click.getClickCount() == 2)
+                        || (pickMode == PickMode.SINGLE && !click.isCtrlKey()
+                                && !click.isShiftKey())) {
+                    setValue(true);
+                    doSwapItems();
                 } else {
                     // implement range select
-                    if (click.isShiftKey()) {
+                    CheckBoxItem<T> anchor = (CheckBoxItem<T>) getAnchor();
+                    if (click.isShiftKey() && anchor != null) {
                         // Java is unhappy with passing this around
-                        CheckBoxItem<T> anchor = (CheckBoxItem<T>) getAnchor();
                         if (anchor != null) {
                             if (anchor.getParent().get() == list1) {
                                 if (this.getParent().get() == list1) {
@@ -220,6 +230,83 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                     }
                 }
             });
+        }
+
+        private void doSwapItems() {
+            Checkbox next = getNextCheckbox();
+            Checkbox previous = getPreviousCheckbox();
+            swapItems();
+            if (next != null) {
+                next.focus();
+            } else if (previous != null) {
+                previous.focus();
+            }
+        }
+
+        private void focusNext() {
+            Checkbox c = getNextCheckbox();
+            if (c != null) {
+                c.focus();
+            }
+        }
+
+        private void focusPrevious() {
+            Checkbox c = getPreviousCheckbox();
+            if (c != null) {
+                c.focus();
+            }
+        }
+
+        private Checkbox getPreviousCheckbox() {
+            Checkbox c = null;
+            VerticalLayout list = ((VerticalLayout) getParent().get());
+            int index = list.indexOf(this);
+            while (index > 0) {
+                index--;
+                c = (Checkbox) list.getComponentAt(index);
+                if (c.isEnabled())
+                    break;
+            }
+            return c;
+        }
+
+        private Checkbox getNextCheckbox() {
+            Checkbox c = null;
+            VerticalLayout list = ((VerticalLayout) getParent().get());
+            int index = list.indexOf(this);
+            while (index < (list.getComponentCount() - 1)) {
+                index++;
+                c = (Checkbox) list.getComponentAt(index);
+                if (c.isEnabled())
+                    break;
+            }
+            return c;
+        }
+
+        private void swapItems() {
+            if (this.getParent().get() == list1) {
+                moveItems(list1, list2);
+//                list1.remove(this);
+//                list2.add(this);
+//                DataProvider<T, ?> dp = (DataProvider<T, ?>) TwinColSelect.this
+//                        .getDataProvider();
+//                if (dp instanceof InMemoryDataProvider && DataViewUtils
+//                        .getComponentSortComparator(TwinColSelect.this)
+//                        .isPresent()) {
+//                    InMemoryDataProvider dataProvider = (InMemoryDataProvider<T>) dp;
+//                    TwinColSelect.this.sortDestinationList(list2, dataProvider);
+//                }
+            } else {
+                moveItems(list2, list1);
+//                list2.remove(this);
+//                list1.add(this);
+//                if (DataViewUtils.getComponentSortComparator(TwinColSelect.this)
+//                        .isPresent()) {
+//                    TwinColSelect.this.reset(true);
+//                }
+            }
+//            updateButtons();
+            TwinColSelect.this.setModelValue(getSelectedItems(), true);
         }
 
         @Override
@@ -273,7 +360,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         getElement().getStyle().set("display", "flex");
         getElement().getStyle().set("flex-direction", "column");
         HorizontalLayout layout = new HorizontalLayout();
-        layout.setSizeFull();
+        layout.setWidthFull();
+        layout.setHeight("calc(100% - 37px)");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
         HorizontalLayout indicators = new HorizontalLayout();
@@ -480,6 +568,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             allButton.addThemeName("icon");
             removeButton.addThemeName("icon");
             clearButton.addThemeName("icon");
+            list1.getElement().setAttribute("aria-label",
+                    i18n != null ? i18n.getOptions() : "Options ");
+            list2.getElement().setAttribute("aria-label",
+                    i18n != null ? i18n.getSelected() : "Selected");
         }
     }
 
@@ -526,6 +618,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     // Setup list layout
     private void setupList(VerticalLayout list) {
+        list.getElement().setAttribute("role", "listbox");
+        list.getElement().setAttribute("tabindex", "0");
         list.getStyle().set("overflow-y", "auto");
         list.setSizeFull();
         list.setSpacing(false);
@@ -748,6 +842,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         CheckBoxItem<T> checkbox = new CheckBoxItem<>(keyMapper.key(item),
                 item);
         checkbox.setWidth("100%");
+        checkbox.getElement().setAttribute("role", "listitem");
+        checkbox.setTabIndex(0);
         updateCheckbox(checkbox);
         return checkbox;
     }
@@ -817,6 +913,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 checkbox.setValue(false);
             });
         }
+
+        setAnchor(null);
     }
 
     /**
@@ -1147,6 +1245,15 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     /**
+     * Set the used PickMode, default is PickMode.DOUBLE.
+     * 
+     * @param pickMode The PickMode.
+     */
+    public void setPickMode(PickMode pickMode) {
+        this.pickMode = pickMode;
+    }
+
+    /**
      * Sets the internationalization properties (texts used for button tooltips)
      * for this component.
      *
@@ -1175,6 +1282,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         private String toggleSelection;
         private String addToSelected;
         private String removeFromSelected;
+        private String selected;
+        private String options;
 
         public String getAddAllToSelected() {
             return addAllToSelected;
@@ -1216,6 +1325,22 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             this.removeFromSelected = removeFromSelected;
         }
 
+        public String getOptions() {
+            return options;
+        }
+
+        public void setOptions(String options) {
+            this.options = options;
+        }
+
+        public String getSelected() {
+            return selected;
+        }
+
+        public void setSelected(String selected) {
+            this.selected = selected;
+        }
+
         public static TwinColSelectI18n getDefault() {
             TwinColSelectI18n english = new TwinColSelectI18n();
             english.setToggleSelection("Toggle selection");
@@ -1223,7 +1348,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             english.setRemoveFromSelected("Remove from selected");
             english.setAddToSelected("Add to selected");
             english.setAddAllToSelected("Add all to selected");
+            english.setSelected("Selected");
+            english.setOptions("Options");
             return english;
         }
+
     }
 }

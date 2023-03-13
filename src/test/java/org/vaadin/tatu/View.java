@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.vaadin.tatu.TwinColSelect.ColType;
 import org.vaadin.tatu.TwinColSelect.FilterMode;
+import org.vaadin.tatu.TwinColSelect.PickMode;
 import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.button.Button;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
@@ -159,13 +161,19 @@ public class View extends VerticalLayout implements AppShellConfigurator {
             select.select("Eight", "Nine", "Ten");
         });
 
+        Select<PickMode> pickMode = new Select<>();
+        pickMode.setItems(PickMode.values());
+        pickMode.addValueChangeListener(e -> {
+            select.setPickMode(pickMode.getValue());
+        });
+        
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons1 = new HorizontalLayout();
         buttons1.add(setItems, refresh, clear, clearTicks, readOnly,
                 nineDisabled, selectSome);
         HorizontalLayout buttons2 = new HorizontalLayout();
-        buttons2.add(filterMode, sorting, styled);
+        buttons2.add(pickMode, filterMode, sorting, styled);
         add(filterField, select, buttons1, buttons2, log);
         setFlexGrow(1, log);
     }

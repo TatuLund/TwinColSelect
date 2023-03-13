@@ -25,6 +25,15 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
+### Version 2.4.0
+- Add better keyboard navigation
+- Improve A11y
+- Introduce PickMode to have single click behavior
+
+### Version 2.3.1
+- Fix bugs with disabled items behavior
+- Reset filter when doing programmatic selection
+
 ### Version 2.3.0
 - Add API's to set tooltips for items and buttons, requires Vaadin 23.3.0 or newer.
 

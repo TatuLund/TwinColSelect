@@ -3,7 +3,7 @@ vaadin-checkbox.checkbox-item[checked] {
 	color: var(--lumo-tint-80pct);
 }
 
-.twincolselect-errorlabel {
+twin-col-select .twincolselect-errorlabel {
 	color: var(--lumo-error-text-color);
     font-size: var(--lumo-font-size-xs);
     line-height: var(--lumo-line-height-xs);
@@ -13,7 +13,7 @@ vaadin-checkbox.checkbox-item[checked] {
     align-self: flex-end;
 }
 
-.twincolselect-label-styles {
+twin-col-select .twincolselect-label-styles {
 	align-self: flex-start;
     color: var(--lumo-secondary-text-color);
 	font-weight: 500;
@@ -31,7 +31,7 @@ vaadin-checkbox.checkbox-item[checked] {
     margin-left: calc(var(--lumo-border-radius-m) / 4);    
 }
 
-.twincolselect-label-styles::after {
+twin-col-select .twincolselect-label-styles::after {
     content: var(--lumo-required-field-indicator, "\2022");
     transition: opacity 0.2s;
     opacity: var(--tcs-required-dot-opacity);
@@ -40,4 +40,14 @@ vaadin-checkbox.checkbox-item[checked] {
     width: 1em;
     margin-left: 4px;
     text-align: center;
+}
+
+twin-col-select vaadin-vertical-layout.options:focus {
+    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
+    outline: unset;
+}
+
+twin-col-select vaadin-vertical-layout.value:focus {
+    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
+    outline: unset;
 }
