@@ -241,7 +241,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private void markRange(VerticalLayout list, Component anchor,
             Component checkBoxItem) {
         boolean marking = false;
-        for (Component i : list.getChildren().collect(Collectors.toList())) {
+        for (Component i : list.getChildren()
+                .filter(c -> ((Checkbox) c).isEnabled())
+                .collect(Collectors.toList())) {
             if (i == anchor || i == checkBoxItem) {
                 marking = !marking;
                 ((CheckBoxItem<T>) i).setValue(true);
@@ -290,8 +292,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         allButton.addClickListener(event -> {
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
-                list1.remove(checkbox);
-                list2.add(checkbox);
+                if (checkbox.isEnabled()) {
+                    list1.remove(checkbox);
+                    list2.add(checkbox);
+                }
             });
             updateButtons();
             setModelValue(getSelectedItems(), true);
@@ -329,13 +333,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             // true)
             list2.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
-                checkbox.setValue(!any2);
+                if (checkbox.isEnabled()) {
+                    checkbox.setValue(!any2);
+                }
             });
             boolean any1 = list1.getChildren()
                     .anyMatch(c -> ((Checkbox) c).getValue());
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
-                checkbox.setValue(!any1);
+                if (checkbox.isEnabled()) {
+                    checkbox.setValue(!any1);
+                }
             });
         });
         recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
@@ -428,6 +436,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             if (checkbox.getValue()) {
                 list1.remove(checkbox);
                 list2.add(checkbox);
+                if (!checkbox.isEnabled()) {
+                    checkbox.setValue(false);
+                }
             }
         });
         DataProvider<T, ?> dp = this.getDataProvider();
@@ -690,7 +701,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private Stream<CheckBoxItem<T>> getCheckboxItems() {
-        return list1.getChildren().filter(CheckBoxItem.class::isInstance)
+        Stream<Component> all = Stream.concat(list1.getChildren(),
+                list2.getChildren());
+        return all.filter(CheckBoxItem.class::isInstance)
                 .map(child -> (CheckBoxItem<T>) child);
     }
 
@@ -767,9 +780,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         super.clear();
         list2.getChildren().forEach(comp -> {
             Checkbox checkbox = (Checkbox) comp;
-            checkbox.setValue(false);
-            list2.remove(checkbox);
-            list1.add(checkbox);
+            if (checkbox.isEnabled()) {
+                checkbox.setValue(false);
+                list2.remove(checkbox);
+                list1.add(checkbox);
+            }
         });
         setModelValue(getSelectedItems(), true);
     }
@@ -919,6 +934,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     protected void setPresentationValue(Set<T> newPresentationValue) {
+        if (dataProvider.get() instanceof InMemoryDataProvider) {
+            getListDataView().removeFilters();
+        }
         list2.getChildren().forEach(comp -> {
             Checkbox checkbox = (Checkbox) comp;
             checkbox.setValue(false);

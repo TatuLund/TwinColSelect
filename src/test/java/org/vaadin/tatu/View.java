@@ -75,10 +75,10 @@ public class View extends VerticalLayout implements AppShellConfigurator {
 
         select.setHeight("350px");
         select.setWidth("500px");
-        select.setTooltipGenerator(item -> "This is item "+item);
+        select.setTooltipGenerator(item -> "This is item " + item);
 
         select.setI18n(TwinColSelectI18n.getDefault());
-        
+
         binder.forField(select).asRequired("Empty selection not allowed")
                 .withValidator(
                         sel -> sel.contains("Two") && sel.contains("Four"),
@@ -149,12 +149,24 @@ public class View extends VerticalLayout implements AppShellConfigurator {
             }
         });
 
+        Button nineDisabled = new Button("Disable nine");
+        nineDisabled.addClickListener(event -> {
+            select.setItemEnabledProvider(item -> !item.equals("Nine"));
+        });
+
+        Button selectSome = new Button("Select");
+        selectSome.addClickListener(event -> {
+            select.select("Eight", "Nine", "Ten");
+        });
+
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
-        HorizontalLayout buttons = new HorizontalLayout();
-        buttons.add(setItems, refresh, clear, clearTicks, readOnly, filterMode,
-                sorting, styled);
-        add(filterField, select, buttons, log);
+        HorizontalLayout buttons1 = new HorizontalLayout();
+        buttons1.add(setItems, refresh, clear, clearTicks, readOnly,
+                nineDisabled, selectSome);
+        HorizontalLayout buttons2 = new HorizontalLayout();
+        buttons2.add(filterMode, sorting, styled);
+        add(filterField, select, buttons1, buttons2, log);
         setFlexGrow(1, log);
     }
 

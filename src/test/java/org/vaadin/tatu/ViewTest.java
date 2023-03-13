@@ -380,4 +380,138 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
     }
 
+    @Test
+    public void selectNineDisabled() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+        test($(Button.class).withCaption("Disable nine").first()).click();
+
+        // Check "Nine" is disabled
+        Assert.assertFalse(
+                test($(Checkbox.class).withCaption("Nine").first()).isUsable());
+
+        test($(Button.class).withCaption("Select").first()).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+
+        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+    }
+
+    @Test
+    public void selectAllNineDisabled() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+        test($(Button.class).withCaption("Disable nine").first()).click();
+
+        test($(Button.class).atIndex(1)).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(
+                "One,Two,Three,Four,Five,Six,Seven,Eight,Ten selected!", value);
+
+        // Options has one and value has 9 items
+        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+    }
+
+    @Test
+    public void paintAllNineDisabled() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+        test($(Button.class).withCaption("Disable nine").first()).click();
+
+        test($(Button.class).atIndex(5)).click();
+        test($(Button.class).atIndex(2)).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(
+                "One,Two,Three,Four,Five,Six,Seven,Eight,Ten selected!", value);
+
+        // Options has one and value has 9 items
+        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+    }
+
+    @Test
+    public void programmaticSelectionResetsFilter() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+
+        // Set the filter to be "T"
+        test($(TextField.class).withCaption("Filter").first()).setValue("T");
+
+        // Do programmatic select
+        test($(Button.class).withCaption("Select").first()).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+
+        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+    }
+
+    @Test
+    public void selectItemsAndFilter() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+
+        test($(Checkbox.class).withCaption("Eight").first()).click();
+        test($(Checkbox.class).withCaption("Nine").first()).click();
+        test($(Checkbox.class).withCaption("Ten").first()).click();
+
+        test($(Button.class).atIndex(2)).click();
+
+        // Assert that span containing the value prints out right value
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+
+        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+
+        // Set the filter to be "T"
+        test($(TextField.class).withCaption("Filter").first()).setValue("T");
+
+        List<Checkbox> filtered = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("options").first()).all();
+
+        // Assert that we have right values, i.e. ones starting with "T", except
+        // "Ten" which is selected
+        Assert.assertEquals("Two", filtered.get(0).getLabel());
+        Assert.assertEquals("Three", filtered.get(1).getLabel());
+
+        Assert.assertEquals(2, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+
+        // Set the filter to be "T"
+        test($(TextField.class).withCaption("Filter").first()).setValue("");
+
+        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+
+    }
 }
