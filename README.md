@@ -25,6 +25,11 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
+### Version 2.5.0
+- Add buttonless and vertical theme variants
+- Small code and CSS fine tuning
+- Small improvements in A11y
+
 ### Version 2.4.0
 - Add better keyboard navigation
 - Improve A11y

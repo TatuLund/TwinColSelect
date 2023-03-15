@@ -3,6 +3,10 @@ vaadin-checkbox.checkbox-item[checked] {
 	color: var(--lumo-tint-80pct);
 }
 
+twin-col-select {
+	min-width: 400px;
+}
+
 twin-col-select .twincolselect-errorlabel {
 	color: var(--lumo-error-text-color);
     font-size: var(--lumo-font-size-xs);
@@ -42,6 +46,18 @@ twin-col-select .twincolselect-label-styles::after {
     text-align: center;
 }
 
+twin-col-select .options {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+twin-col-select .value {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
 twin-col-select vaadin-vertical-layout.options:focus {
     box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
     outline: unset;
@@ -50,4 +66,39 @@ twin-col-select vaadin-vertical-layout.options:focus {
 twin-col-select vaadin-vertical-layout.value:focus {
     box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
     outline: unset;
+}
+
+twin-col-select[theme~="vertical"] > vaadin-horizontal-layout { 
+   flex-wrap: wrap;
+   flex-direction: column;
+}
+
+twin-col-select:not([theme~="no-buttons"])[theme~="vertical"] .options {
+  width: 80% !important;
+}
+
+twin-col-select[theme~="vertical"] .options {
+  height: 45%;
+  flex-grow: 1;	
+}
+
+twin-col-select:not([theme~="no-buttons"])[theme~="vertical"] .value {
+  width: 80% !important;
+}
+
+twin-col-select[theme~="vertical"] .value {
+  height: 45%;
+  flex-grow: 1;
+}
+
+twin-col-select[theme~="no-buttons"] .buttons {
+   display: none;
+}
+
+twin-col-select[theme~="vertical"] .buttons {
+   order: 1;
+}
+
+twin-col-select[theme~="vertical"] .twincolselect-errorlabel {
+	align-self: flex-start;
 }

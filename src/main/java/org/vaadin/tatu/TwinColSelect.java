@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -16,6 +17,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
@@ -24,7 +26,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
-import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -60,7 +61,6 @@ import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
@@ -86,7 +86,7 @@ import com.vaadin.flow.shared.Registration;
 @CssImport(value = "./twincolselect.css")
 @CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
-        implements HasItemComponents<T>, HasSize, HasValidation,
+        implements HasItemComponents<T>, HasSize, HasValidation, HasTheme,
         MultiSelect<TwinColSelect<T>, T>,
         HasListDataView<T, TwinColSelectListDataView<T>>,
         HasDataView<T, Void, TwinColSelectDataView<T>> {
@@ -126,6 +126,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private VerticalLayout list1 = new VerticalLayout();
     private VerticalLayout list2 = new VerticalLayout();
+    VerticalLayout buttons = new VerticalLayout();
     private String errorMessage = "";
     private Div errorLabel = new Div();
     private Label label = new Label();
@@ -134,6 +135,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private int lastNotifiedDataSize = -1;
     private volatile int lastFetchedDataSize = -1;
     private SerializableConsumer<UI> sizeRequest;
+    private Random rand = new Random();
 
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
@@ -286,26 +288,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         private void swapItems() {
             if (this.getParent().get() == list1) {
                 moveItems(list1, list2);
-//                list1.remove(this);
-//                list2.add(this);
-//                DataProvider<T, ?> dp = (DataProvider<T, ?>) TwinColSelect.this
-//                        .getDataProvider();
-//                if (dp instanceof InMemoryDataProvider && DataViewUtils
-//                        .getComponentSortComparator(TwinColSelect.this)
-//                        .isPresent()) {
-//                    InMemoryDataProvider dataProvider = (InMemoryDataProvider<T>) dp;
-//                    TwinColSelect.this.sortDestinationList(list2, dataProvider);
-//                }
             } else {
                 moveItems(list2, list1);
-//                list2.remove(this);
-//                list1.add(this);
-//                if (DataViewUtils.getComponentSortComparator(TwinColSelect.this)
-//                        .isPresent()) {
-//                    TwinColSelect.this.reset(true);
-//                }
             }
-//            updateButtons();
             TwinColSelect.this.setModelValue(getSelectedItems(), true);
         }
 
@@ -364,12 +349,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         layout.setHeight("calc(100% - 37px)");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
-        HorizontalLayout indicators = new HorizontalLayout();
-        indicators.setSpacing(false);
-        indicators.setMargin(false);
+        setId(randomId("twincolselect", 5));
         label.setVisible(false);
+        label.setFor(this);
         label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
-        indicators.add(label);
         setLabelStyles(label);
         setSizeFull();
         list1.addClassName("options");
@@ -435,9 +418,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             });
         });
         recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        VerticalLayout buttons = new VerticalLayout();
         buttons.setWidth("15%");
         buttons.setHeight("100%");
+        buttons.addClassName("buttons");
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setAlignItems(Alignment.CENTER);
         buttons.add(allButton, addButton, removeButton, clearButton,
@@ -445,8 +428,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         layout.setFlexGrow(1, list1, list2);
         layout.add(list1, buttons, list2);
         updateButtons();
-        // shadow.appendChild(indicators.getElement(),layout.getElement(),errorLabel.getElement());
-        add(indicators, layout, errorLabel);
+        add(label, layout, errorLabel);
     }
 
     private void detectDirection() {
@@ -569,7 +551,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             removeButton.addThemeName("icon");
             clearButton.addThemeName("icon");
             list1.getElement().setAttribute("aria-label",
-                    i18n != null ? i18n.getOptions() : "Options ");
+                    i18n != null ? i18n.getOptions() : "Options");
             list2.getElement().setAttribute("aria-label",
                     i18n != null ? i18n.getSelected() : "Selected");
         }
@@ -620,8 +602,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private void setupList(VerticalLayout list) {
         list.getElement().setAttribute("role", "listbox");
         list.getElement().setAttribute("tabindex", "0");
-        list.getStyle().set("overflow-y", "auto");
-        list.setSizeFull();
         list.setSpacing(false);
         list.setPadding(false);
         list.getStyle().set("border", LIST_BORDER);
@@ -991,6 +971,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 });
     }
 
+    /**
+     * Adds theme variants to the component.
+     *
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(TwinColSelectVariant... variants) {
+        getThemeNames().addAll(
+                Stream.of(variants).map(TwinColSelectVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     *
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(TwinColSelectVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(TwinColSelectVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
     @Override
     public Set<T> getSelectedItems() {
         return Collections.unmodifiableSet(new LinkedHashSet<>(list2
@@ -1070,12 +1074,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         updateReadOnlyStyles(readOnly, list1);
         updateReadOnlyStyles(readOnly, list2);
         if (readOnly) {
+            list1.getElement().setAttribute("role", "list");
+            list2.getElement().setAttribute("role", "list");
             addButton.setEnabled(false);
             allButton.setEnabled(false);
             removeButton.setEnabled(false);
             clearButton.setEnabled(false);
             recycleButton.setEnabled(false);
         } else {
+            list1.getElement().setAttribute("role", "listbox");
+            list2.getElement().setAttribute("role", "listbox");
             updateButtons();
             recycleButton.setEnabled(true);
         }
@@ -1247,10 +1255,18 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     /**
      * Set the used PickMode, default is PickMode.DOUBLE.
      * 
-     * @param pickMode The PickMode.
+     * @param pickMode
+     *            The PickMode.
      */
     public void setPickMode(PickMode pickMode) {
         this.pickMode = pickMode;
+    }
+
+    private String randomId(String prefix, int chars) {
+        int limit = (10 * chars) - 1;
+        String key = "" + rand.nextInt(limit);
+        key = String.format("%" + chars + "s", key).replace(' ', '0');
+        return prefix + "-" + key;
     }
 
     /**

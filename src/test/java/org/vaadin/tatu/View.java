@@ -12,6 +12,7 @@ import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -50,7 +51,7 @@ public class View extends VerticalLayout implements AppShellConfigurator {
         Checkbox sorting = new Checkbox("Sorting");
         sorting.setEnabled(false);
         TwinColSelect<String> select = new TwinColSelect<>();
-        select.setLabel("Do selection");
+        select.setLabel("Select Two and Four");
         Button setItems = new Button("Set");
         Bean bean = new Bean();
         setItems.addClickListener(event -> {
@@ -61,7 +62,7 @@ public class View extends VerticalLayout implements AppShellConfigurator {
                     .collect(Collectors.toSet());
             bean.setSelection(selection);
             dataView.addItemCountChangeListener(e -> {
-                Notification.show("Item count changed");
+                Notification.show("Item count: " + e.getItemCount());
             });
             sorting.setEnabled(true);
         });
@@ -163,17 +164,27 @@ public class View extends VerticalLayout implements AppShellConfigurator {
 
         Select<PickMode> pickMode = new Select<>();
         pickMode.setItems(PickMode.values());
+        pickMode.setValue(PickMode.DOUBLE);
         pickMode.addValueChangeListener(e -> {
             select.setPickMode(pickMode.getValue());
         });
-        
+
+        MultiSelectComboBox<TwinColSelectVariant> variants = new MultiSelectComboBox<>();
+        variants.setPlaceholder("Variants");
+        variants.setItems(TwinColSelectVariant.values());
+        variants.addValueChangeListener(e -> {
+            select.removeThemeVariants(TwinColSelectVariant.values());
+            variants.getValue()
+                    .forEach(variant -> select.addThemeVariants(variant));
+        });
+
         log.getStyle().set("overflow-y", "auto");
         log.setHeight("100px");
         HorizontalLayout buttons1 = new HorizontalLayout();
         buttons1.add(setItems, refresh, clear, clearTicks, readOnly,
                 nineDisabled, selectSome);
         HorizontalLayout buttons2 = new HorizontalLayout();
-        buttons2.add(pickMode, filterMode, sorting, styled);
+        buttons2.add(pickMode, variants, filterMode, sorting, styled);
         add(filterField, select, buttons1, buttons2, log);
         setFlexGrow(1, log);
     }

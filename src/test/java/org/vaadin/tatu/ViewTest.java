@@ -98,7 +98,7 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
 
         // Assert that label has correct text
-        Assert.assertEquals("Do selection",
+        Assert.assertEquals("Select Two and Four",
                 test($(Label.class).withClassName("twincolselect-label-styles")
                         .first()).getText());
 
@@ -111,7 +111,7 @@ public class ViewTest extends UIUnit4Test {
 
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
-        Assert.assertEquals("Item count changed",
+        Assert.assertEquals("Item count: 10",
                 test($(Notification.class).last()).getText());
 
         // Assert that options have 10 items
@@ -270,6 +270,8 @@ public class ViewTest extends UIUnit4Test {
 
         // Set the filter to be "T"
         test($(TextField.class).withCaption("Filter").first()).setValue("T");
+        Assert.assertEquals("Item count: 3",
+                test($(Notification.class).last()).getText());
 
         List<Checkbox> filtered = $(Checkbox.class,
                 $(VerticalLayout.class).withClassName("options").first()).all();
@@ -278,6 +280,24 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Two", filtered.get(0).getLabel());
         Assert.assertEquals("Three", filtered.get(1).getLabel());
         Assert.assertEquals("Ten", filtered.get(2).getLabel());
+
+        // Select all three
+        test($(Button.class).atIndex(1)).click();
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(
+                "Two,Three,Ten selected!",
+                value);
+
+        // Clear filter
+        test($(TextField.class).withCaption("Filter").first()).setValue("");
+        Assert.assertEquals("Item count: 10",
+                test($(Notification.class).last()).getText());
+        // Options has 7 and value has 3 items
+        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
+                .first().getComponentCount());
+        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
+                .first().getComponentCount());
+    
     }
 
     @Test
