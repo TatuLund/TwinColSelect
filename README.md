@@ -25,6 +25,9 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
+### Version 2.5.2
+- Fix issue with drag and drop clearing error color
+
 ### Version 2.5.1
 - A11y fixes: Label, error label and invalid status announced correctly now.
 

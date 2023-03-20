@@ -27,7 +27,7 @@ import com.vaadin.flow.theme.Theme;
 @Route("")
 @Theme("mytheme")
 public class View extends VerticalLayout implements AppShellConfigurator {
-    int newi = 1000;
+    int newi = 1;
     VerticalLayout log = new VerticalLayout();
     TwinColSelectListDataView<String> dataView = null;
 
@@ -100,12 +100,18 @@ public class View extends VerticalLayout implements AppShellConfigurator {
         });
         Button refresh = new Button("Add/Refresh");
         refresh.addClickListener(event -> {
+            String newItem = "New " + newi;
             if (dataView == null) {
                 List<String> items = new ArrayList<>();
+                items.add(newItem);
                 dataView = select.setItems(items);
+                dataView.addItemCountChangeListener(e -> {
+                    Notification.show("Item count: " + e.getItemCount());
+                });
+            } else {
+                dataView.addItem(newItem);
+                newi++;
             }
-            dataView.addItem("An item " + newi);
-            newi++;
         });
         Button clear = new Button("Clear");
         clear.addClickListener(event -> {

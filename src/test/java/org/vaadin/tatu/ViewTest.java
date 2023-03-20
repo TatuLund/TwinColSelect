@@ -382,6 +382,16 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Two", selected.get(1).getLabel());
         Assert.assertEquals("Four", selected.get(2).getLabel());
 
+        // Move Two back to options, and re-assert
+        test($(Checkbox.class).withCaption("Two").first()).click();
+        value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Five,Four selected!", value);    
+        selected = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("value").first()).all();
+        Assert.assertEquals("Five", selected.get(0).getLabel());
+        Assert.assertEquals("Four", selected.get(1).getLabel());
+
+        // Clear and assert
         test($(Button.class).withCaption("Clear").first()).click();
         selected = $(Checkbox.class,
                 $(VerticalLayout.class).withClassName("value").first()).all();
@@ -436,6 +446,24 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
     }
 
+    @Test
+    public void addRefresh() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+        test($(Select.class).first()).selectItem("SINGLE");
+        Assert.assertEquals("Item count: 10",
+                test($(Notification.class).last()).getText());
+
+        test($(Button.class).withCaption("Add/Refresh").first()).click();
+        Assert.assertEquals("Item count: 11",
+                test($(Notification.class).last()).getText());
+        test($(Checkbox.class).withCaption("New 1").first()).click();
+
+        String value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("New 1 selected!", value);
+    }
+    
     @Test
     public void selectNineDisabled() {
         navigate(View.class);

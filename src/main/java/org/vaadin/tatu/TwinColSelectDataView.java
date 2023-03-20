@@ -1,7 +1,10 @@
 package org.vaadin.tatu;
 
+import java.util.stream.Stream;
+
 import com.vaadin.flow.data.provider.AbstractDataView;
 import com.vaadin.flow.data.provider.DataProvider;
+import com.vaadin.flow.data.provider.DataViewUtils;
 import com.vaadin.flow.data.provider.IdentifierProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -46,7 +49,7 @@ public class TwinColSelectDataView<T> extends AbstractDataView<T> {
 
     @Override
     public T getItem(int index) {
-        final int dataSize = dataProviderSupplier.get().size(new Query<>());
+        final int dataSize = dataProviderSupplier.get().size(DataViewUtils.getQuery(component));
         if (dataSize == 0) {
             throw new IndexOutOfBoundsException(
                     String.format("Requested index %d on empty data.", index));
@@ -57,6 +60,11 @@ public class TwinColSelectDataView<T> extends AbstractDataView<T> {
                     index, dataSize - 1));
         }
         return getItems().skip(index).findFirst().orElse(null);
+    }
+
+    @Override
+    public Stream<T> getItems() {
+        return dataProviderSupplier.get().fetch(DataViewUtils.getQuery(component));
     }
 
     @Override

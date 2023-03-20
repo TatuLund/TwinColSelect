@@ -186,8 +186,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 }
             });
             dragSource.addDragEndListener(event -> {
+                String background = LIST_BACKGROUND;
+                if (isInvalid()) {
+                    background = LIST_BACKGROUND_ERROR;
+                }
                 list1.getStyle().set("background", LIST_BACKGROUND);
-                list2.getStyle().set("background", LIST_BACKGROUND);
+                list2.getStyle().set("background", background);
             });
             DomListenerRegistration reg = getElement().addEventListener("keyup",
                     event -> {
@@ -359,7 +363,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         setErrorLabelStyles();
         errorLabel.setVisible(false);
         errorLabel.setId(randomId("twincolselect-error", 5));
-        errorLabel.getElement().setAttribute("aria-role", "alert");
+        errorLabel.getElement().setAttribute("role", "alert");
         label.setId(randomId("twincolselect-label", 5));
         label.setVisible(false);
         label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
