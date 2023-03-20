@@ -13,6 +13,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.testbench.unit.UIUnit4Test;
 
@@ -284,9 +285,7 @@ public class ViewTest extends UIUnit4Test {
         // Select all three
         test($(Button.class).atIndex(1)).click();
         String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
-                "Two,Three,Ten selected!",
-                value);
+        Assert.assertEquals("Two,Three,Ten selected!", value);
 
         // Clear filter
         test($(TextField.class).withCaption("Filter").first()).setValue("");
@@ -297,7 +296,7 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
         Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
                 .first().getComponentCount());
-    
+
     }
 
     @Test
@@ -352,6 +351,43 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Five", selected.get(0).getLabel());
         Assert.assertEquals("Two", selected.get(1).getLabel());
         Assert.assertEquals("Four", selected.get(2).getLabel());
+    }
+
+    @Test
+    public void selectionOrderIsPreserved_clear_singleClick() {
+        navigate(View.class);
+        // Populate the TwinColSelect by clicking set button
+        test($(Button.class).withCaption("Set").first()).click();
+        test($(Select.class).first()).selectItem("SINGLE");
+
+        // Pick three items one at the time
+        test($(Checkbox.class).withCaption("Five").first()).click();
+        String value = test($(Span.class).id("value")).getText();
+        // Assert that span is containing the value
+        Assert.assertEquals("Five selected!", value);
+        test($(Checkbox.class).withCaption("Two").first()).click();
+        // Assert that span containing the value prints out in correct order
+        value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Five,Two selected!", value);
+        test($(Checkbox.class).withCaption("Four").first()).click();
+        // Assert that span containing the value prints out in correct order
+        value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals("Five,Two,Four selected!", value);
+
+        // Find the checkboxes from the target list and assert their labels are
+        // in assumed order
+        List<Checkbox> selected = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("value").first()).all();
+        Assert.assertEquals("Five", selected.get(0).getLabel());
+        Assert.assertEquals("Two", selected.get(1).getLabel());
+        Assert.assertEquals("Four", selected.get(2).getLabel());
+
+        test($(Button.class).withCaption("Clear").first()).click();
+        selected = $(Checkbox.class,
+                $(VerticalLayout.class).withClassName("value").first()).all();
+        value = test($(Span.class).id("value")).getText();
+        Assert.assertEquals(" selected!", value);
+        Assert.assertEquals(0, selected.size());
     }
 
     @Test

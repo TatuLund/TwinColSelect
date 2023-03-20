@@ -26,6 +26,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -124,8 +125,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private SerializablePredicate<T> itemEnabledProvider = item -> isEnabled();
 
-    private VerticalLayout list1 = new VerticalLayout();
-    private VerticalLayout list2 = new VerticalLayout();
+    VerticalLayout list1 = new VerticalLayout();
+    VerticalLayout list2 = new VerticalLayout();
     VerticalLayout buttons = new VerticalLayout();
     private String errorMessage = "";
     private Div errorLabel = new Div();
@@ -310,7 +311,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      * @param anchor
      * @param checkBoxItem
      */
-    private void markRange(VerticalLayout list, Component anchor,
+    void markRange(VerticalLayout list, Component anchor,
             Component checkBoxItem) {
         boolean marking = false;
         for (Component i : list.getChildren()
@@ -325,6 +326,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 }
             }
         }
+    }
+
+    void clearAnchor() {
+        anchorItem = null;
+    }
+
+    CheckBoxItem<T> getAnchor() {
+        return anchorItem;
     }
 
     /**
@@ -349,14 +358,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         layout.setHeight("calc(100% - 37px)");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
-        setId(randomId("twincolselect", 5));
+        errorLabel.setId(randomId("twincolselect-error", 5));
+        errorLabel.getElement().setAttribute("aria-role", "alert");
+        label.setId(randomId("twincolselect-label", 5));
         label.setVisible(false);
-        label.setFor(this);
         label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
         setLabelStyles(label);
         setSizeFull();
+        list2.getElement().setAttribute("aria-describedby",
+                errorLabel.getId().get());
         list1.addClassName("options");
+        list1.getElement().setAttribute("aria-describedby",
+                label.getId().get());
         list2.addClassName("value");
+        list2.getElement().setAttribute("aria-live", "assertive");
         setupList(list1);
         setupList(list2);
         allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
@@ -482,9 +497,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         if (requiredIndicatorVisible) {
             label.getElement().getStyle().set("--tcs-required-dot-opacity",
                     "1");
+            list1.getElement().setAttribute("aria-required", "true");
         } else {
             label.getElement().getStyle().set("--tcs-required-dot-opacity",
                     "0");
+            list1.getElement().removeAttribute("aria-required");
         }
     }
 
@@ -567,14 +584,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private void setAnchor(Component checkBoxItem) {
         anchorItem = (CheckBoxItem<T>) checkBoxItem;
-    }
-
-    private void clearAnchor() {
-        anchorItem = null;
-    }
-
-    private CheckBoxItem<T> getAnchor() {
-        return anchorItem;
     }
 
     private void sortDestinationList(VerticalLayout list2,
@@ -843,10 +852,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         if (invalid) {
             list2.getStyle().set("border", LIST_BORDER_ERROR);
             list2.getStyle().set("background", LIST_BACKGROUND_ERROR);
+            list2.getElement().setAttribute("aria-invalid", "true");
+            list1.getElement().setAttribute("aria-invalid", "true");
             errorLabel.setVisible(true);
         } else {
             list2.getStyle().set("border", LIST_BORDER);
             list2.getStyle().set("background", LIST_BACKGROUND);
+            list2.getElement().removeAttribute("aria-invalid");
+            list1.getElement().removeAttribute("aria-invalid");
             errorLabel.setVisible(false);
         }
     }

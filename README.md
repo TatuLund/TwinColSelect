@@ -25,6 +25,9 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
+### Version 2.5.1
+- A11y fixes: Label, error label and invalid status announced correctly now.
+
 ### Version 2.5.0
 - Add buttonless and vertical theme variants
 - Small code and CSS fine tuning

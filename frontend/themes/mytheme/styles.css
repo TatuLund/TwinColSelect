@@ -35,3 +35,7 @@ twin-col-select[theme~="styled"] {
 twin-col-select[theme~="styled"] label {
 	color: darkcyan;
 }
+
+vaadin-button[disabled] {
+	pointer-events: auto;
+}
