@@ -11,7 +11,6 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
@@ -385,7 +384,7 @@ public class ViewTest extends UIUnit4Test {
         // Move Two back to options, and re-assert
         test($(Checkbox.class).withCaption("Two").first()).click();
         value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Five,Four selected!", value);    
+        Assert.assertEquals("Five,Four selected!", value);
         selected = $(Checkbox.class,
                 $(VerticalLayout.class).withClassName("value").first()).all();
         Assert.assertEquals("Five", selected.get(0).getLabel());
@@ -463,7 +462,7 @@ public class ViewTest extends UIUnit4Test {
         String value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("New 1 selected!", value);
     }
-    
+
     @Test
     public void selectNineDisabled() {
         navigate(View.class);
@@ -596,6 +595,10 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
         Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
                 .first().getComponentCount());
+    }
 
+    @Override
+    public boolean printTree() {
+        return true;
     }
 }

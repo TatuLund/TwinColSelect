@@ -85,6 +85,7 @@ public class TwinColSelectTest {
         Assert.assertEquals("Three", dataView.getItem(1));
         Assert.assertEquals("Ten", dataView.getItem(2));
 
+        Assert.assertEquals(3, select.getGenericDataView().getItems().count());
         Assert.assertEquals("Two", select.getGenericDataView().getItem(0));
         Assert.assertEquals("Three", select.getGenericDataView().getItem(1));
         Assert.assertEquals("Ten", select.getGenericDataView().getItem(2));
