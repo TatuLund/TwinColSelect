@@ -3,21 +3,21 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>2.5.2</version>
+    <version>3.0.0</version>
     <name>TwinColSelect</name>
-    <description>Integration of paper-slider for Vaadin platform</description>
+    <description>TwinColSelect component for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>23.3.0</vaadin.version>
+        <vaadin.version>24.0.2</vaadin.version>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <drivers.dir>${project.basedir}/drivers</drivers.dir>
 
-        <jetty.version>9.4.15.v20190215</jetty.version>
+        <jetty.version>11.0.14</jetty.version>
     </properties>
     <organization>
         <name>Tatu Lund</name>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>io.github.bonigarcia</groupId>
             <artifactId>webdrivermanager</artifactId>
-            <version>3.8.1</version>
+            <version>5.1.0</version>
             <scope>test</scope>
 			<exclusions>
 				<exclusion>
