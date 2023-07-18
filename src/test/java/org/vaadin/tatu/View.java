@@ -10,6 +10,7 @@ import org.vaadin.tatu.TwinColSelect.FilterMode;
 import org.vaadin.tatu.TwinColSelect.PickMode;
 import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -22,6 +23,8 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.Theme;
 
 @Route("")

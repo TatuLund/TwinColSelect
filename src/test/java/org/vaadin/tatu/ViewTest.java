@@ -8,7 +8,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -98,9 +98,10 @@ public class ViewTest extends UIUnit4Test {
                 .first().getComponentCount());
 
         // Assert that label has correct text
-        Assert.assertEquals("Select Two and Four",
-                test($(Label.class).withClassName("twincolselect-label-styles")
-                        .first()).getText());
+        NativeLabel label = $(NativeLabel.class)
+                .withClassName("twincolselect-label-styles").first();
+        NativeLabelTester labelTester = new NativeLabelTester(label);
+        Assert.assertEquals("Select Two and Four", labelTester.getText());
 
         // Assert that button states are correct
         Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());

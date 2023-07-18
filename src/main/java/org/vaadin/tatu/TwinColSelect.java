@@ -26,7 +26,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Direction;
-import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -38,7 +37,7 @@ import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
 import com.vaadin.flow.component.dnd.EffectAllowed;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
 import com.vaadin.flow.component.orderedlayout.FlexComponent.JustifyContentMode;
@@ -108,6 +107,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         RESETVALUE;
     }
 
+    /**
+     * Defines the picking mode
+     * 
+     * @see setPickMode(PickMode)
+     */
     public enum PickMode {
         /**
          * Pick items with single click to selection.
@@ -125,12 +129,13 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private SerializablePredicate<T> itemEnabledProvider = item -> isEnabled();
 
+    // package protected for unit testing
     VerticalLayout list1 = new VerticalLayout();
     VerticalLayout list2 = new VerticalLayout();
     VerticalLayout buttons = new VerticalLayout();
     private String errorMessage = "";
     private Div errorLabel = new Div();
-    private Label label = new Label();
+    private NativeLabel label = new NativeLabel();
     private final AtomicReference<DataProvider<T, ?>> dataProvider = new AtomicReference<>(
             DataProvider.ofItems());
     private int lastNotifiedDataSize = -1;
@@ -193,7 +198,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 list1.getStyle().set("background", LIST_BACKGROUND);
                 list2.getStyle().set("background", background);
             });
-            DomListenerRegistration reg = getElement().addEventListener("keyup",
+            DomListenerRegistration reg = getElement().addEventListener("keydown",
                     event -> {
                         if (event.getEventData()
                                 .getNumber("event.keyCode") == 40) {
@@ -207,6 +212,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                         }
                     });
             reg.addEventData("event.keyCode");
+            reg.addEventData(
+                    "([40, 38, 13].includes(event.keyCode)) ? event.preventDefault() : undefined");
+            reg.setFilter("[40, 38, 13].includes(event.keyCode)");            
             addClickListener(click -> {
                 // handle doubleclick list swap
                 if ((pickMode == PickMode.DOUBLE && click.getClickCount() == 2)
@@ -1309,6 +1317,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         return i18n;
     }
 
+    /**
+     * Class for defining internationalization texts
+     */
     public static class TwinColSelectI18n implements Serializable {
         private String addAllToSelected;
         private String removeAllFromSelected;

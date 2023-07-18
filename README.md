@@ -25,119 +25,12 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
-### Version 2.5.2
-- Fix issue with drag and drop clearing error color
+### Version 3.0.1
+- Use NativeLabel instead of Label
+- Small improvement in keyboard navigation
 
-### Version 2.5.1
-- A11y fixes: Label, error label and invalid status announced correctly now.
-
-### Version 2.5.0
-- Add buttonless and vertical theme variants
-- Small code and CSS fine tuning
-- Small improvements in A11y
-
-### Version 2.4.0
-- Add better keyboard navigation
-- Improve A11y
-- Introduce PickMode to have single click behavior
-
-### Version 2.3.1
-- Fix bugs with disabled items behavior
-- Reset filter when doing programmatic selection
-
-### Version 2.3.0
-- Add API's to set tooltips for items and buttons, requires Vaadin 23.3.0 or newer.
-
-### Version 2.2.3
-- Correct button states after setting readonly false
-
-### Version 2.2.2
-- Preseve order of selection when comparator is not set
-
-### Version 2.2.1
-- Fix issues with buttons
-
-### Version 2.2.0
-- Fix required indicator to be similar to other Vaadin components
-
-### Version 2.1.0
-- Fixed issue with buttons enabled when no data
-- Fixed issue with Filter and SortComparator not working via DataView
-- Fixed issue with sorting not done when moving items
-- Compiled with Java 11 for Vaadin 23
-
-### Version 2.0.0
-- Added DataView API support for Vaadin 17+
-
-### Version 1.8.1
-- Fixed css that breaks with Vaadin 14.6.0
-
-### Version 1.8.0
-- Improved range select & Double click to select, kudos to Michael Thorne for contributions
-- Small fixes  
-
-### Version 1.7.0
-- Made the items look less like conventional checkboxes
-- Added API to customize button icons and captions
-
-### Version 1.6.0
-
-- Add option to configure whether value is reset when filter is changed or not
-- Fixed corner case bugs related to filtering and sorting
-
-### Version 1.5.1
-
-- Fixed bug with undefined direction
-
-### Version 1.5.0
-
-- Added right to left support, requires Vaadin 14.3 or newer
-
-### Version 1.4.1
-
-- Fixed the default constructor to use empty set as default value (see #4)
-
-### Version 1.4.0
-
-- Added range selection option
-
-### Version 1.3.1
-
-- Fixed broken readOnly functionality
-
-### Version 1.3.0
-
-- Added clearTicks(..) and setClearTicksOnSelect(..)
-
-### Version 1.2.4
-
-- Fixes bug with deselect / deselectAll
-- Changed clear() to reset checkboxes too
-
-### Version 1.2.3
-
-- Fixes broken clear()
-
-### Version 1.2.2
-
-- Fixes broken setValue(..)
-
-### Version 1.2.1
-
-- Changed default value of the error message
-
-### Version 1.2.0
-
-- Keep lists sorted if in memory DataProvider has Comparator set
-
-### Version 1.1.0
-
-- Small fixes, added some JavaDocs added Drag and Drop support
-- Vaadin 14.1 or newer required
-
-### Version 1.0.0
-
-- The first release 
+### Version 3.0.0
+- The first release to support Vaadin 24
 
 ## Development instructions
 
