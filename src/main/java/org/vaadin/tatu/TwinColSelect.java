@@ -4,14 +4,17 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
+import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.HasValidation;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
@@ -45,7 +48,9 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
+import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
@@ -64,11 +69,11 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            The bean type in TwinColSelect
  */
-@Tag("div")
+@Tag("twin-col-select")
 @CssImport(value = "./twincolselect.css")
 @CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
-        implements HasItemsAndComponents<T>, HasSize, HasValidation,
+        implements HasItemsAndComponents<T>, HasSize, HasValidation, HasTheme,
         MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
 
     /**
@@ -87,19 +92,32 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         RESETVALUE;
     }
 
+    public enum PickMode {
+        /**
+         * Pick items with single click to selection.
+         */
+        SINGLE,
+        /**
+         * Pick items with double click to selection.
+         */
+        DOUBLE;
+    }
+
     private static final String VALUE = "value";
 
     private final KeyMapper<T> keyMapper = new KeyMapper<>(this::getItemId);
 
     private SerializablePredicate<T> itemEnabledProvider = item -> isEnabled();
 
-    private VerticalLayout list1 = new VerticalLayout();
-    private VerticalLayout list2 = new VerticalLayout();
+    VerticalLayout list1 = new VerticalLayout();
+    VerticalLayout list2 = new VerticalLayout();
+    VerticalLayout buttons = new VerticalLayout();
     private String errorMessage = "";
     private Div errorLabel = new Div();
     private Label label = new Label();
     private Label required = new Label("*");
     private DataProvider<T, ?> dataProvider = DataProvider.ofItems();
+    private Random rand = new Random();
 
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
@@ -121,10 +139,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private Button clearButton;
     private Button recycleButton;
 
+    private TwinColSelectI18n i18n;
+
+    private boolean requiredIndicatorVisible;
+
+    private PickMode pickMode = PickMode.DOUBLE;
+
     private class CheckBoxItem<T> extends Checkbox implements ItemComponent<T> {
 
         private final T item;
         private DragSource<CheckBoxItem<T>> dragSource;
+        private DomListenerRegistration reg = null;
 
         private CheckBoxItem(String id, T item) {
             this.getElement().setAttribute("theme", "checkbox-item");
@@ -143,21 +168,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 }
             });
             dragSource.addDragEndListener(event -> {
+                String background = LIST_BACKGROUND;
+                if (isInvalid()) {
+                    background = LIST_BACKGROUND_ERROR;
+                }
                 list1.getStyle().set("background", LIST_BACKGROUND);
-                list2.getStyle().set("background", LIST_BACKGROUND);
+                list2.getStyle().set("background", background);
             });
             addClickListener(click -> {
                 // handle doubleclick list swap
-                if (click.getClickCount() == 2) {
-                    if (this.getParent().get() == list1) {
-                        list1.remove(this);
-                        list2.add(this);
-                    } else {
-                        list2.remove(this);
-                        list1.add(this);
-                    }
-                    updateButtons();
-                    TwinColSelect.this.setModelValue(getSelectedItems(), true);
+                if ((pickMode == PickMode.DOUBLE && click.getClickCount() == 2)
+                        || (pickMode == PickMode.SINGLE && !click.isCtrlKey()
+                                && !click.isShiftKey())) {
+                    setValue(true);
+                    doSwapItems();
                 } else {
                     // implement range select
                     if (click.isShiftKey()) {
@@ -181,6 +205,84 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                     }
                 }
             });
+            // There is a subtle bug in Checkbox focus behavior, thus code
+            // temporarily
+            // disabled. This works in Vaadin 23/24, but not in Vaadin 14.
+            reg = getElement().addEventListener("keydown", event -> {
+                if (event.getEventData().getNumber("event.keyCode") == 40) {
+                    // focusNext();
+                } else if (event.getEventData()
+                        .getNumber("event.keyCode") == 38) {
+                    // focusPrevious();
+                } else if (event.getEventData()
+                        .getNumber("event.keyCode") == 13) {
+                    doSwapItems();
+                }
+            });
+            reg.addEventData("event.keyCode");
+            reg.addEventData(
+                    "([40, 38, 13].includes(event.keyCode)) ? event.preventDefault() : undefined");
+            reg.setFilter("[40, 38, 13].includes(event.keyCode)");
+        }
+
+        private void doSwapItems() {
+            // Checkbox next = getNextCheckbox();
+            // Checkbox previous = getPreviousCheckbox();
+            swapItems();
+            // if (next != null) {
+            // next.focus();
+            // } else if (previous != null) {
+            // previous.focus();
+            // }
+        }
+
+        // private void focusNext() {
+        // Checkbox c = getNextCheckbox();
+        // if (c != null) {
+        // c.focus();
+        // }
+        // }
+        //
+        // private void focusPrevious() {
+        // Checkbox c = getPreviousCheckbox();
+        // if (c != null) {
+        // c.focus();
+        // }
+        // }
+
+        // private Checkbox getPreviousCheckbox() {
+        // Checkbox c = null;
+        // VerticalLayout list = ((VerticalLayout) getParent().get());
+        // int index = list.indexOf(this);
+        // while (index > 0) {
+        // index--;
+        // c = (Checkbox) list.getComponentAt(index);
+        // if (c.isEnabled())
+        // break;
+        // }
+        // return c;
+        // }
+        //
+        // private Checkbox getNextCheckbox() {
+        // Checkbox c = null;
+        // VerticalLayout list = ((VerticalLayout) getParent().get());
+        // int index = list.indexOf(this);
+        // while (index < (list.getComponentCount() - 1)) {
+        // index++;
+        // c = (Checkbox) list.getComponentAt(index);
+        // if (c.isEnabled())
+        // break;
+        // }
+        // return c;
+        // }
+
+        private void swapItems() {
+            if (this.getParent().get() == list1) {
+                moveItems(list1, list2);
+            } else {
+                moveItems(list2, list1);
+            }
+            TwinColSelect.this.setModelValue(getSelectedItems(), true);
         }
 
         @Override
@@ -199,9 +301,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      * @param anchor
      * @param checkBoxItem
      */
-    private void markRange(VerticalLayout list, Component anchor, Component checkBoxItem) {
+    void markRange(VerticalLayout list, Component anchor,
+            Component checkBoxItem) {
         boolean marking = false;
-        for (Component i : list.getChildren().collect(Collectors.toList())) {
+        for (Component i : list.getChildren()
+                .filter(c -> ((Checkbox) c).isEnabled())
+                .collect(Collectors.toList())) {
             if (i == anchor || i == checkBoxItem) {
                 marking = !marking;
                 ((CheckBoxItem<T>) i).setValue(true);
@@ -229,18 +334,24 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         getElement().getStyle().set("display", "flex");
         getElement().getStyle().set("flex-direction", "column");
         HorizontalLayout layout = new HorizontalLayout();
-        layout.setSizeFull();
+        layout.setWidthFull();
+        layout.setHeight("calc(100% - 37px)");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
-        HorizontalLayout indicators = new HorizontalLayout();
-        indicators.setSpacing(false);
-        indicators.setMargin(false);
+        errorLabel.setId(randomId("twincolselect-error", 5));
+        errorLabel.getElement().setAttribute("role", "alert");
+        label.setId(randomId("twincolselect-label", 5));
         label.setVisible(false);
-        required.setVisible(false);
-        indicators.add(required, label);
+        label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
         setLabelStyles(label);
-        setLabelStyles(required);
         setSizeFull();
+        list2.getElement().setAttribute("aria-describedby",
+                errorLabel.getId().get());
+        list1.addClassName("options");
+        list1.getElement().setAttribute("aria-describedby",
+                label.getId().get());
+        list2.addClassName("value");
+        list2.getElement().setAttribute("aria-live", "assertive");
         setupList(list1);
         setupList(list2);
         allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
@@ -280,29 +391,33 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         recycleButton = new Button(VaadinIcon.RECYCLE.create());
         recycleButton.addClickListener(event -> {
             // true if any value is selected
-            boolean any2 = list2.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
-            // then set all to the negation (any? then all false, none? than all true)
+            boolean any2 = list2.getChildren()
+                    .anyMatch(c -> ((Checkbox) c).getValue());
+            // then set all to the negation (any? then all false, none? than all
+            // true)
             list2.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
                 checkbox.setValue(!any2);
             });
-            boolean any1 = list1.getChildren().anyMatch(c -> ((Checkbox)c).getValue());
+            boolean any1 = list1.getChildren()
+                    .anyMatch(c -> ((Checkbox) c).getValue());
             list1.getChildren().forEach(comp -> {
                 Checkbox checkbox = (Checkbox) comp;
                 checkbox.setValue(!any1);
             });
         });
         recycleButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
-        VerticalLayout buttons = new VerticalLayout();
         buttons.setWidth("15%");
         buttons.setHeight("100%");
+        buttons.addClassName("buttons");
         buttons.setJustifyContentMode(JustifyContentMode.CENTER);
         buttons.setAlignItems(Alignment.CENTER);
         buttons.add(allButton, addButton, removeButton, clearButton,
                 recycleButton);
         layout.setFlexGrow(1, list1, list2);
         layout.add(list1, buttons, list2);
-        add(indicators, layout, errorLabel);
+        updateButtons();
+        add(label, layout, errorLabel);
     }
 
     private void detectDirection() {
@@ -352,7 +467,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        required.setVisible(true);
+        this.requiredIndicatorVisible = requiredIndicatorVisible;
+        if (requiredIndicatorVisible) {
+            label.getElement().getStyle().set("--tcs-required-dot-opacity",
+                    "1");
+            list1.getElement().setAttribute("aria-required", "true");
+        } else {
+            label.getElement().getStyle().set("--tcs-required-dot-opacity",
+                    "0");
+            list1.getElement().removeAttribute("aria-required");
+        }
     }
 
     /**
@@ -363,7 +487,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      */
     @Override
     public boolean isRequiredIndicatorVisible() {
-        return required.isVisible();
+        return requiredIndicatorVisible;
     }
 
     // Internal method that moves items from list1 to list2
@@ -373,6 +497,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             if (checkbox.getValue()) {
                 list1.remove(checkbox);
                 list2.add(checkbox);
+                if (!checkbox.isEnabled()) {
+                    checkbox.setValue(false);
+                }
             }
         });
         DataProvider<T, ?> dp = this.getDataProvider();
@@ -401,6 +528,34 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 removeButton.setEnabled(true);
                 clearButton.setEnabled(true);
             }
+            setTooltipText(addButton,
+                    i18n != null ? i18n.getAddToSelected() : null);
+            setTooltipText(allButton,
+                    i18n != null ? i18n.getAddAllToSelected() : null);
+            setTooltipText(removeButton,
+                    i18n != null ? i18n.getRemoveFromSelected() : null);
+            setTooltipText(clearButton,
+                    i18n != null ? i18n.getRemoveAllFromSelected() : null);
+            setTooltipText(recycleButton,
+                    i18n != null ? i18n.getToggleSelection() : null);
+            addButton.addThemeName("icon");
+            allButton.addThemeName("icon");
+            removeButton.addThemeName("icon");
+            clearButton.addThemeName("icon");
+            list1.getElement().setAttribute("aria-label",
+                    i18n != null ? i18n.getOptions() : "Options");
+            list2.getElement().setAttribute("aria-label",
+                    i18n != null ? i18n.getSelected() : "Selected");
+        }
+    }
+
+    private static void setTooltipText(Button button, String text) {
+        if (text != null) {
+            button.getElement().setAttribute("title", text);
+            button.getElement().setAttribute("aria-label", text);
+        } else {
+            button.getElement().removeAttribute("title");
+            button.getElement().removeAttribute("aria-label");
         }
     }
 
@@ -409,6 +564,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private FilterMode filterMode = FilterMode.ITEMS;
 
     private CheckBoxItem<T> anchorItem = null;
+
+    private SerializableFunction<T, String> tooltipGenerator;
 
     private void setAnchor(Component checkBoxItem) {
         anchorItem = (CheckBoxItem<T>) checkBoxItem;
@@ -446,8 +603,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     // Setup list layout
     private void setupList(VerticalLayout list) {
-        list.getStyle().set("overflow-y", "auto");
-        list.setSizeFull();
+        list.getElement().setAttribute("role", "listbox");
+        list.getElement().setAttribute("tabindex", "0");
         list.setSpacing(false);
         list.setPadding(false);
         list.getStyle().set("border", LIST_BORDER);
@@ -499,7 +656,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private void setErrorLabelStyles() {
-        errorLabel.addClassName("twincolselect-errorlabel");        
+        errorLabel.addClassName("twincolselect-errorlabel");
     }
 
     private void reset(boolean refresh) {
@@ -519,6 +676,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
                     }
                 });
+        updateButtons();
     }
 
     /**
@@ -534,6 +692,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         Objects.requireNonNull(itemLabelGenerator,
                 "The item label generator can not be null");
         this.itemLabelGenerator = itemLabelGenerator;
+        reset(true);
+    }
+
+    /**
+     * Sets the tooltip generator that is used to produce the tooltips shown in
+     * the twincolselect for each item. By default,
+     * {@link String#valueOf(Object)} is used.
+     *
+     * @param tooltipGenerator
+     *            the item label provider to use, set null to disable tooltips.
+     */
+    public void setTooltipGenerator(
+            SerializableFunction<T, String> tooltipGenerator) {
+        this.tooltipGenerator = tooltipGenerator;
         reset(true);
     }
 
@@ -561,6 +733,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      */
     public ItemLabelGenerator<T> getItemLabelGenerator() {
         return itemLabelGenerator;
+    }
+
+    /**
+     * Gets the tooltip generator that is used to produce the strings shown in
+     * the twincolselect for each item.
+     *
+     * @return the tooltip generator used
+     */
+    public SerializableFunction<T, String> getTooltipGenerator() {
+        return tooltipGenerator;
     }
 
     /**
@@ -609,6 +791,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private void updateCheckbox(CheckBoxItem<T> checkbox) {
         checkbox.setLabel(getItemLabelGenerator().apply(checkbox.getItem()));
+        String title = (getTooltipGenerator() != null
+                ? getTooltipGenerator().apply(checkbox.getItem())
+                : null);
+        if (title != null) {
+            checkbox.getElement().setAttribute("title", title);
+        } else {
+            checkbox.getElement().removeAttribute("title");
+        }
         updateEnabled(checkbox);
     }
 
@@ -616,6 +806,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         CheckBoxItem<T> checkbox = new CheckBoxItem<>(keyMapper.key(item),
                 item);
         checkbox.setWidth("100%");
+        checkbox.getElement().setAttribute("role", "listitem");
+        // checkbox.setTabIndex(0);
         updateCheckbox(checkbox);
         return checkbox;
     }
@@ -635,14 +827,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         if (invalid) {
             list2.getStyle().set("border", LIST_BORDER_ERROR);
             list2.getStyle().set("background", LIST_BACKGROUND_ERROR);
-            errorLabel.setText(errorMessage);
+            list2.getElement().setAttribute("aria-invalid", "true");
+            list1.getElement().setAttribute("aria-invalid", "true");
             errorLabel.setVisible(true);
         } else {
             list2.getStyle().set("border", LIST_BORDER);
             list2.getStyle().set("background", LIST_BACKGROUND);
+            list2.getElement().removeAttribute("aria-invalid");
+            list1.getElement().removeAttribute("aria-invalid");
             errorLabel.setVisible(false);
         }
-
     }
 
     @Override
@@ -685,6 +879,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 checkbox.setValue(false);
             });
         }
+        setAnchor(null);
     }
 
     /**
@@ -760,6 +955,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 });
     }
 
+    /**
+     * Adds theme variants to the component.
+     *
+     * @param variants
+     *            theme variants to add
+     */
+    public void addThemeVariants(TwinColSelectVariant... variants) {
+        getThemeNames().addAll(
+                Stream.of(variants).map(TwinColSelectVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
+    /**
+     * Removes theme variants from the component.
+     *
+     * @param variants
+     *            theme variants to remove
+     */
+    public void removeThemeVariants(TwinColSelectVariant... variants) {
+        getThemeNames().removeAll(
+                Stream.of(variants).map(TwinColSelectVariant::getVariantName)
+                        .collect(Collectors.toList()));
+    }
+
     @Override
     public Set<T> getSelectedItems() {
         Set<T> set = new HashSet<T>();
@@ -773,16 +992,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public void updateSelection(Set<T> addedItems, Set<T> removedItems) {
-        Set<T> value = new HashSet<>(getValue());
-        value.addAll(addedItems);
+        Set<T> value = new LinkedHashSet<>(getValue());
         value.removeAll(removedItems);
+        value.addAll(addedItems);
         setValue(value);
     }
 
     @Override
     public void setErrorMessage(String errorMessage) {
-        errorLabel.setVisible(true);
         this.errorMessage = errorMessage;
+        errorLabel.setText(errorMessage);
     }
 
     /**
@@ -805,6 +1024,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     protected void setPresentationValue(Set<T> newPresentationValue) {
+        if (dataProvider instanceof InMemoryDataProvider) {
+            ((InMemoryDataProvider) dataProvider).setFilter(null);
+        }
         list2.getChildren().forEach(comp -> {
             Checkbox checkbox = (Checkbox) comp;
             checkbox.setValue(false);
@@ -838,11 +1060,20 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         super.setReadOnly(readOnly);
         updateReadOnlyStyles(readOnly, list1);
         updateReadOnlyStyles(readOnly, list2);
-        addButton.setEnabled(!readOnly);
-        allButton.setEnabled(!readOnly);
-        removeButton.setEnabled(!readOnly);
-        clearButton.setEnabled(!readOnly);
-        recycleButton.setEnabled(!readOnly);
+        if (readOnly) {
+            list1.getElement().setAttribute("role", "list");
+            list2.getElement().setAttribute("role", "list");
+            addButton.setEnabled(false);
+            allButton.setEnabled(false);
+            removeButton.setEnabled(false);
+            clearButton.setEnabled(false);
+            recycleButton.setEnabled(false);
+        } else {
+            list1.getElement().setAttribute("role", "listbox");
+            list2.getElement().setAttribute("role", "listbox");
+            updateButtons();
+            recycleButton.setEnabled(true);
+        }
     }
 
     private void updateReadOnlyStyles(boolean readOnly, VerticalLayout list) {
@@ -907,5 +1138,124 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     public void setAddButtonIcon(Component icon) {
         addButton.setIcon(icon);
+    }
+
+    /**
+     * Set the used PickMode, default is PickMode.DOUBLE.
+     * 
+     * @param pickMode
+     *            The PickMode.
+     */
+    public void setPickMode(PickMode pickMode) {
+        this.pickMode = pickMode;
+    }
+
+    private String randomId(String prefix, int chars) {
+        int limit = (10 * chars) - 1;
+        String key = "" + rand.nextInt(limit);
+        key = String.format("%" + chars + "s", key).replace(' ', '0');
+        return prefix + "-" + key;
+    }
+
+    /**
+     * Sets the internationalization properties (texts used for button tooltips)
+     * for this component.
+     *
+     * @param i18n
+     *            the internationalized properties, null to disable all
+     *            tooltips.
+     */
+    public void setI18n(TwinColSelectI18n i18n) {
+        this.i18n = i18n;
+        updateButtons();
+    }
+
+    /**
+     * Gets the internationalization object previously set for this component.
+     *
+     * @return the i18n object. It will be <code>null</code>, If the i18n
+     *         properties weren't set.
+     */
+    public TwinColSelectI18n getI18n() {
+        return i18n;
+    }
+
+    public static class TwinColSelectI18n implements Serializable {
+        private String addAllToSelected;
+        private String removeAllFromSelected;
+        private String toggleSelection;
+        private String addToSelected;
+        private String removeFromSelected;
+        private String selected;
+        private String options;
+
+        public String getAddAllToSelected() {
+            return addAllToSelected;
+        }
+
+        public void setAddAllToSelected(String addAllToSelected) {
+            this.addAllToSelected = addAllToSelected;
+        }
+
+        public String getRemoveAllFromSelected() {
+            return removeAllFromSelected;
+        }
+
+        public void setRemoveAllFromSelected(String removeAllFromSelected) {
+            this.removeAllFromSelected = removeAllFromSelected;
+        }
+
+        public String getToggleSelection() {
+            return toggleSelection;
+        }
+
+        public void setToggleSelection(String toggleSelection) {
+            this.toggleSelection = toggleSelection;
+        }
+
+        public String getAddToSelected() {
+            return addToSelected;
+        }
+
+        public void setAddToSelected(String addToSelected) {
+            this.addToSelected = addToSelected;
+        }
+
+        public String getRemoveFromSelected() {
+            return removeFromSelected;
+        }
+
+        public void setRemoveFromSelected(String removeFromSelected) {
+            this.removeFromSelected = removeFromSelected;
+        }
+
+        public String getOptions() {
+            return options;
+        }
+
+        public void setOptions(String options) {
+            this.options = options;
+        }
+
+        public String getSelected() {
+            return selected;
+        }
+
+        public void setSelected(String selected) {
+            this.selected = selected;
+        }
+
+        public static TwinColSelectI18n getDefault() {
+            TwinColSelectI18n english = new TwinColSelectI18n();
+            english.setToggleSelection("Toggle selection");
+            english.setRemoveAllFromSelected("Remove all from selected");
+            english.setRemoveFromSelected("Remove from selected");
+            english.setAddToSelected("Add to selected");
+            english.setAddAllToSelected("Add all to selected");
+            english.setSelected("Selected");
+            english.setOptions("Options");
+            return english;
+        }
+
     }
 }

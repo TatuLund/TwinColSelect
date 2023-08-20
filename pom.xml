@@ -3,12 +3,12 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>1.8.1</version>
+    <version>1.9.0</version>
     <name>TwinColSelect</name>
     <description>Integration of paper-slider for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>14.7.1</vaadin.version>
+        <vaadin.version>14.10.2</vaadin.version>
 
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -112,6 +112,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+        	<groupId>javax.servlet</groupId>
+        	<artifactId>javax.servlet-api</artifactId>
+        	<version>3.1.0</version>
+        	<scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-testbench</artifactId>
             <scope>test</scope>
@@ -142,6 +148,10 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-maven-plugin</artifactId>
                 <version>${vaadin.version}</version>
+                <configuration>
+                	<pnpmEnable>true</pnpmEnable>
+                	<requireHomeNodeExec>true</requireHomeNodeExec>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
