@@ -1,10 +1,15 @@
 package org.vaadin.tatu;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+import org.vaadin.tatu.TwinColSelect;
+import org.vaadin.tatu.TwinColSelectListDataView;
+import org.vaadin.tatu.TwinColSelectVariant;
 import org.vaadin.tatu.TwinColSelect.ColType;
 import org.vaadin.tatu.TwinColSelect.FilterMode;
 import org.vaadin.tatu.TwinColSelect.PickMode;
@@ -58,6 +63,14 @@ public class View extends VerticalLayout implements AppShellConfigurator {
         Button setItems = new Button("Set");
         Bean bean = new Bean();
         setItems.addClickListener(event -> {
+            List<String> items = new ArrayList<>();
+//            IntStream.range(0, 100).forEach(i -> {
+//                items.addAll(Arrays
+//                        .asList("One", "Two", "Three", "Four", "Five", "Six",
+//                                "Seven", "Eight", "Nine", "Ten")
+//                        .stream().map(n -> i + "-" + n).collect(Collectors.toList()));
+//            });
+//            dataView = select.setItems(items);
             dataView = select.setItems("One", "Two", "Three", "Four", "Five",
                     "Six", "Seven", "Eight", "Nine", "Ten");
             Set<String> selection = dataView.getItems()

@@ -15,10 +15,14 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.vaadin.tatu.TwinColSelect;
+import org.vaadin.tatu.TwinColSelectListDataView;
+import org.vaadin.tatu.TwinColSelectVariant;
 import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
 
@@ -104,8 +108,9 @@ public class TwinColSelectTest {
                 "Eight", "Nine", "Ten");
 
         for (int i = 0; i < 10; i++) {
-            Checkbox checkbox = (Checkbox) select.list1.getComponentAt(i);
-            Assert.assertFalse(checkbox.getValue());
+            Component checkbox = select.list1.getComponentAt(i);
+            Assert.assertFalse(
+                    checkbox.getElement().getProperty("value", false));
         }
 
         Component from = select.list1.getChildren().skip(2).findFirst().get();
@@ -113,8 +118,9 @@ public class TwinColSelectTest {
         select.markRange(select.list1, from, to);
 
         for (int i = 2; i < 5; i++) {
-            Checkbox checkbox = (Checkbox) select.list1.getComponentAt(i);
-            Assert.assertTrue(checkbox.getValue());
+            Component checkbox = select.list1.getComponentAt(i);
+            Assert.assertTrue(
+                    checkbox.getElement().getProperty("value", false));
         }
     }
 
@@ -130,12 +136,18 @@ public class TwinColSelectTest {
         Assert.assertEquals("listbox", options.getAttribute("role"));
         Assert.assertEquals("Options", options.getAttribute("aria-label"));
         Assert.assertEquals("0", options.getAttribute("tabindex"));
-        Assert.assertEquals("listitem",
+        Assert.assertEquals("option",
                 options.getChild(0).getAttribute("role"));
-        Assert.assertEquals("listitem",
+        Assert.assertEquals("false",
+                options.getChild(0).getAttribute("aria-selected"));
+        Assert.assertEquals("option",
                 options.getChild(1).getAttribute("role"));
-        Assert.assertEquals("listitem",
+        Assert.assertEquals("false",
+                options.getChild(0).getAttribute("aria-selected"));
+        Assert.assertEquals("option",
                 options.getChild(2).getAttribute("role"));
+        Assert.assertEquals("false",
+                options.getChild(0).getAttribute("aria-selected"));
         Assert.assertEquals(null, options.getAttribute("aria-invalid"));
 
         // Assert roles, and right initial values of the selection list
@@ -204,9 +216,9 @@ public class TwinColSelectTest {
 
         Element options = select.getElement().getChild(1).getChild(0);
         Assert.assertEquals(3, options.getChildCount());
-        Assert.assertEquals("One", options.getChild(0).getProperty("label"));
-        Assert.assertEquals("Two", options.getChild(1).getProperty("label"));
-        Assert.assertEquals("Three", options.getChild(2).getProperty("label"));
+        Assert.assertEquals("One", options.getChild(0).getText());
+        Assert.assertEquals("Two", options.getChild(1).getText());
+        Assert.assertEquals("Three", options.getChild(2).getText());
 
         Element selection = select.getElement().getChild(1).getChild(2);
         Assert.assertEquals(0, selection.getChildCount());
@@ -217,14 +229,14 @@ public class TwinColSelectTest {
 
         Assert.assertEquals(1, selection.getChildCount());
         Assert.assertEquals(2, options.getChildCount());
-        Assert.assertEquals("One", selection.getChild(0).getProperty("label"));
+        Assert.assertEquals("One", selection.getChild(0).getText());
 
         select.select("Two");
         Assert.assertEquals(Set.of("One", "Two"), select.getValue());
 
         Assert.assertEquals(2, selection.getChildCount());
         Assert.assertEquals(1, options.getChildCount());
-        Assert.assertEquals("Two", selection.getChild(0).getProperty("label"));
+        Assert.assertEquals("Two", selection.getChild(0).getText());
     }
 
     @Test
@@ -254,9 +266,9 @@ public class TwinColSelectTest {
 
         Element options = select.getElement().getChild(1).getChild(0);
         Assert.assertEquals(3, options.getChildCount());
-        Assert.assertEquals("ONE", options.getChild(0).getProperty("label"));
-        Assert.assertEquals("TWO", options.getChild(1).getProperty("label"));
-        Assert.assertEquals("THREE", options.getChild(2).getProperty("label"));
+        Assert.assertEquals("ONE", options.getChild(0).getText());
+        Assert.assertEquals("TWO", options.getChild(1).getText());
+        Assert.assertEquals("THREE", options.getChild(2).getText());
     }
 
     @Test
@@ -313,14 +325,14 @@ public class TwinColSelectTest {
 
         Element options = select.getElement().getChild(1).getChild(0);
         Assert.assertEquals(3, options.getChildCount());
-        Assert.assertEquals("One", options.getChild(0).getProperty("label"));
-        Assert.assertEquals("Two", options.getChild(1).getProperty("label"));
-        Assert.assertEquals("Three", options.getChild(2).getProperty("label"));
+        Assert.assertEquals("One", options.getChild(0).getText());
+        Assert.assertEquals("Two", options.getChild(1).getText());
+        Assert.assertEquals("Three", options.getChild(2).getText());
 
         TestItem item = select.getGenericDataView().getItem(0);
         item.setData("Zero");
         select.getGenericDataView().refreshItem(item);
-        Assert.assertEquals("Zero", options.getChild(0).getProperty("label"));
+        Assert.assertEquals("Zero", options.getChild(0).getText());
     }
 
     public class TestItem {

@@ -5,6 +5,7 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
@@ -24,7 +25,7 @@ public class ViewTest extends UIUnit4Test {
         test($(Button.class).withCaption("Set").first()).click();
         test($(Checkbox.class).withCaption("Sorting").first()).click();
 
-        List<Checkbox> options = $(Checkbox.class,
+        List<SelectItem> options = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first()).all();
 
         // List is now alphabetically ordered
@@ -40,16 +41,16 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Two", options.get(9).getLabel());
 
         // Pick items
-        test($(Checkbox.class).withCaption("Two").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
         test($(Button.class).atIndex(2)).click();
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Four").first().click();
         test($(Button.class).atIndex(2)).click();
 
         // Selection follows the order
         String value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("Four,Two selected!", value);
 
-        List<Checkbox> selected = $(Checkbox.class,
+        List<SelectItem> selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first())
                         .withValue(true).all();
         Assert.assertEquals("Four", selected.get(0).getLabel());
@@ -61,28 +62,28 @@ public class ViewTest extends UIUnit4Test {
         navigate(View.class);
         test($(Button.class).withCaption("Set").first()).click();
 
-        List<Checkbox> options = $(Checkbox.class,
+        List<SelectItem> options = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
         Assert.assertEquals(0, options.size());
 
         // Pick items
-        test($(Checkbox.class).withCaption("Two").first()).click();
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
+        $(SelectItem.class).withText("Four").first().click();
         test($(Button.class).atIndex(2)).click();
 
-        List<Checkbox> selected = $(Checkbox.class,
+        List<SelectItem> selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first())
                         .withValue(true).all();
         Assert.assertEquals(2, selected.size());
 
         test($(Button.class).atIndex(5)).click();
-        options = $(Checkbox.class,
+        options = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
         Assert.assertEquals(8, options.size());
 
-        selected = $(Checkbox.class,
+        selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first())
                         .withValue(true).all();
         Assert.assertEquals(0, selected.size());
@@ -244,7 +245,7 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals(10, $(VerticalLayout.class).withClassName("value")
                 .first().getComponentCount());
 
-        test($(Checkbox.class).withCaption("One").first()).click();
+        $(SelectItem.class).withText("One").first().click();
         test($(Button.class).atIndex(3)).click();
 
         // Assert value has nine items
@@ -257,7 +258,7 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals(
                 "Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
                 value);
-        List<Checkbox> tickedOptions = $(Checkbox.class,
+        List<SelectItem> tickedOptions = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
         Assert.assertEquals(1, tickedOptions.size());
@@ -274,7 +275,7 @@ public class ViewTest extends UIUnit4Test {
         Assert.assertEquals("Item count: 3",
                 test($(Notification.class).last()).getText());
 
-        List<Checkbox> filtered = $(Checkbox.class,
+        List<SelectItem> filtered = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first()).all();
 
         // Assert that we have right values, i.e. ones startign with "T"
@@ -306,8 +307,8 @@ public class ViewTest extends UIUnit4Test {
         test($(Button.class).withCaption("Set").first()).click();
 
         // Pick items
-        test($(Checkbox.class).withCaption("One").first()).click();
-        test($(Checkbox.class).withCaption("Three").first()).click();
+        $(SelectItem.class).withText("One").first().click();
+        $(SelectItem.class).withText("Three").first().click();
         test($(Button.class).atIndex(2)).click();
 
         // Assert the error label as the selection does not match validator
@@ -317,8 +318,8 @@ public class ViewTest extends UIUnit4Test {
                 test(errorLabel).getText());
 
         // Pick items
-        test($(Checkbox.class).withCaption("Two").first()).click();
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
+        $(SelectItem.class).withText("Four").first().click();
         test($(Button.class).atIndex(2)).click();
 
         // Assert that error label is not visible as validator passes
@@ -332,11 +333,11 @@ public class ViewTest extends UIUnit4Test {
         test($(Button.class).withCaption("Set").first()).click();
 
         // Pick three items one at the time
-        test($(Checkbox.class).withCaption("Five").first()).click();
+        $(SelectItem.class).withText("Five").first().click();
         test($(Button.class).atIndex(2)).click();
-        test($(Checkbox.class).withCaption("Two").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
         test($(Button.class).atIndex(2)).click();
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Four").first().click();
         test($(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out in correct order
@@ -345,7 +346,7 @@ public class ViewTest extends UIUnit4Test {
 
         // Find the checkboxes from the target list and assert their labels are
         // in assumed order
-        List<Checkbox> selected = $(Checkbox.class,
+        List<SelectItem> selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first())
                         .withValue(true).all();
         Assert.assertEquals("Five", selected.get(0).getLabel());
@@ -361,39 +362,41 @@ public class ViewTest extends UIUnit4Test {
         test($(Select.class).first()).selectItem("SINGLE");
 
         // Pick three items one at the time
-        test($(Checkbox.class).withCaption("Five").first()).click();
+        $(SelectItem.class).withText("Five").first().click();
         String value = test($(Span.class).id("value")).getText();
         // Assert that span is containing the value
         Assert.assertEquals("Five selected!", value);
-        test($(Checkbox.class).withCaption("Two").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
         // Assert that span containing the value prints out in correct order
         value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("Five,Two selected!", value);
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Four").first().click();
         // Assert that span containing the value prints out in correct order
         value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("Five,Two,Four selected!", value);
 
         // Find the checkboxes from the target list and assert their labels are
         // in assumed order
-        List<Checkbox> selected = $(Checkbox.class,
+        List<SelectItem> selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first()).all();
         Assert.assertEquals("Five", selected.get(0).getLabel());
         Assert.assertEquals("Two", selected.get(1).getLabel());
         Assert.assertEquals("Four", selected.get(2).getLabel());
 
+        test($(Button.class).withCaption("Clear Ticks (BOTH)").first()).click();
+
         // Move Two back to options, and re-assert
-        test($(Checkbox.class).withCaption("Two").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
         value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("Five,Four selected!", value);
-        selected = $(Checkbox.class,
+        selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first()).all();
         Assert.assertEquals("Five", selected.get(0).getLabel());
         Assert.assertEquals("Four", selected.get(1).getLabel());
 
         // Clear and assert
         test($(Button.class).withCaption("Clear").first()).click();
-        selected = $(Checkbox.class,
+        selected = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("value").first()).all();
         value = test($(Span.class).id("value")).getText();
         Assert.assertEquals(" selected!", value);
@@ -407,10 +410,10 @@ public class ViewTest extends UIUnit4Test {
         test($(Button.class).withCaption("Set").first()).click();
 
         // Tick items
-        test($(Checkbox.class).withCaption("Two").first()).click();
-        test($(Checkbox.class).withCaption("Four").first()).click();
+        $(SelectItem.class).withText("Two").first().click();
+        $(SelectItem.class).withText("Four").first().click();
 
-        List<Checkbox> ticked = $(Checkbox.class,
+        List<SelectItem> ticked = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
 
@@ -418,7 +421,7 @@ public class ViewTest extends UIUnit4Test {
 
         test($(Button.class).withCaption("Clear Ticks (BOTH)").first()).click();
 
-        ticked = $(Checkbox.class,
+        ticked = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first())
                         .withValue(true).all();
 
@@ -431,7 +434,7 @@ public class ViewTest extends UIUnit4Test {
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
 
-        test($(Checkbox.class).withCaption("One").first()).click();
+        $(SelectItem.class).withText("One").first().click();
         test($(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out in correct order
@@ -458,7 +461,7 @@ public class ViewTest extends UIUnit4Test {
         test($(Button.class).withCaption("Add/Refresh").first()).click();
         Assert.assertEquals("Item count: 11",
                 test($(Notification.class).last()).getText());
-        test($(Checkbox.class).withCaption("New 1").first()).click();
+        $(SelectItem.class).withText("New 1").first().click();
 
         String value = test($(Span.class).id("value")).getText();
         Assert.assertEquals("New 1 selected!", value);
@@ -473,7 +476,7 @@ public class ViewTest extends UIUnit4Test {
 
         // Check "Nine" is disabled
         Assert.assertFalse(
-                test($(Checkbox.class).withCaption("Nine").first()).isUsable());
+                $(SelectItem.class).withText("Nine").first().isEnabled());
 
         test($(Button.class).withCaption("Select").first()).click();
 
@@ -558,9 +561,9 @@ public class ViewTest extends UIUnit4Test {
         // Populate the TwinColSelect by clicking set button
         test($(Button.class).withCaption("Set").first()).click();
 
-        test($(Checkbox.class).withCaption("Eight").first()).click();
-        test($(Checkbox.class).withCaption("Nine").first()).click();
-        test($(Checkbox.class).withCaption("Ten").first()).click();
+        $(SelectItem.class).withText("Eight").first().click();
+        $(SelectItem.class).withText("Nine").first().click();
+        $(SelectItem.class).withText("Ten").first().click();
 
         test($(Button.class).atIndex(2)).click();
 
@@ -576,7 +579,7 @@ public class ViewTest extends UIUnit4Test {
         // Set the filter to be "T"
         test($(TextField.class).withCaption("Filter").first()).setValue("T");
 
-        List<Checkbox> filtered = $(Checkbox.class,
+        List<SelectItem> filtered = $(SelectItem.class,
                 $(VerticalLayout.class).withClassName("options").first()).all();
 
         // Assert that we have right values, i.e. ones starting with "T", except
