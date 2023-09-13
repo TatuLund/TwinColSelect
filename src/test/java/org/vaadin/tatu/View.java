@@ -63,7 +63,7 @@ public class View extends VerticalLayout implements AppShellConfigurator {
         Button setItems = new Button("Set");
         Bean bean = new Bean();
         setItems.addClickListener(event -> {
-            List<String> items = new ArrayList<>();
+//            List<String> items = new ArrayList<>();
 //            IntStream.range(0, 100).forEach(i -> {
 //                items.addAll(Arrays
 //                        .asList("One", "Two", "Three", "Four", "Five", "Six",
