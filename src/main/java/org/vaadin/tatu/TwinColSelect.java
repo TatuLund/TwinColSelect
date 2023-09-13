@@ -71,7 +71,6 @@ import com.vaadin.flow.shared.Registration;
  */
 @Tag("twin-col-select")
 @CssImport(value = "./twincolselect.css")
-@CssImport(value = "./twincolselect-checkbox.css", themeFor = "vaadin-checkbox")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         implements HasItemsAndComponents<T>, HasSize, HasValidation, HasTheme,
         MultiSelect<TwinColSelect<T>, T>, HasDataProvider<T> {
@@ -145,15 +144,16 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private PickMode pickMode = PickMode.DOUBLE;
 
-    private class CheckBoxItem<T> extends Checkbox implements ItemComponent<T> {
+    private class CheckBoxItem<T> extends SelectItem
+            implements ItemComponent<T> {
 
         private final T item;
         private DragSource<CheckBoxItem<T>> dragSource;
         private DomListenerRegistration reg = null;
 
         private CheckBoxItem(String id, T item) {
-            this.getElement().setAttribute("theme", "checkbox-item");
-            this.addClassName("checkbox-item");
+            super();
+            this.addClassName("twincolselect-item");
             this.item = item;
             getElement().setProperty(VALUE, id);
             dragSource = DragSource.create(this);
@@ -210,10 +210,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             // disabled. This works in Vaadin 23/24, but not in Vaadin 14.
             reg = getElement().addEventListener("keydown", event -> {
                 if (event.getEventData().getNumber("event.keyCode") == 40) {
-                    // focusNext();
+                     focusNext();
                 } else if (event.getEventData()
                         .getNumber("event.keyCode") == 38) {
-                    // focusPrevious();
+                    focusPrevious();
                 } else if (event.getEventData()
                         .getNumber("event.keyCode") == 13) {
                     doSwapItems();
@@ -226,55 +226,55 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         }
 
         private void doSwapItems() {
-            // Checkbox next = getNextCheckbox();
-            // Checkbox previous = getPreviousCheckbox();
+            SelectItem next = getNextCheckbox();
+            SelectItem previous = getPreviousCheckbox();
             swapItems();
-            // if (next != null) {
-            // next.focus();
-            // } else if (previous != null) {
-            // previous.focus();
-            // }
+            if (next != null) {
+                next.focus();
+            } else if (previous != null) {
+                previous.focus();
+            }
         }
 
-        // private void focusNext() {
-        // Checkbox c = getNextCheckbox();
-        // if (c != null) {
-        // c.focus();
-        // }
-        // }
-        //
-        // private void focusPrevious() {
-        // Checkbox c = getPreviousCheckbox();
-        // if (c != null) {
-        // c.focus();
-        // }
-        // }
+        private void focusNext() {
+            SelectItem c = getNextCheckbox();
+            if (c != null) {
+                c.focus();
+            }
+        }
 
-        // private Checkbox getPreviousCheckbox() {
-        // Checkbox c = null;
-        // VerticalLayout list = ((VerticalLayout) getParent().get());
-        // int index = list.indexOf(this);
-        // while (index > 0) {
-        // index--;
-        // c = (Checkbox) list.getComponentAt(index);
-        // if (c.isEnabled())
-        // break;
-        // }
-        // return c;
-        // }
-        //
-        // private Checkbox getNextCheckbox() {
-        // Checkbox c = null;
-        // VerticalLayout list = ((VerticalLayout) getParent().get());
-        // int index = list.indexOf(this);
-        // while (index < (list.getComponentCount() - 1)) {
-        // index++;
-        // c = (Checkbox) list.getComponentAt(index);
-        // if (c.isEnabled())
-        // break;
-        // }
-        // return c;
-        // }
+        private void focusPrevious() {
+            SelectItem c = getPreviousCheckbox();
+            if (c != null) {
+                c.focus();
+            }
+        }
+
+        private SelectItem getPreviousCheckbox() {
+            SelectItem c = null;
+            VerticalLayout list = ((VerticalLayout) getParent().get());
+            int index = list.indexOf(this);
+            while (index > 0) {
+                index--;
+                c = (SelectItem) list.getComponentAt(index);
+                if (c.isEnabled())
+                    break;
+            }
+            return c;
+        }
+
+        private SelectItem getNextCheckbox() {
+            SelectItem c = null;
+            VerticalLayout list = ((VerticalLayout) getParent().get());
+            int index = list.indexOf(this);
+            while (index < (list.getComponentCount() - 1)) {
+                index++;
+                c = (SelectItem) list.getComponentAt(index);
+                if (c.isEnabled())
+                    break;
+            }
+            return c;
+        }
 
         private void swapItems() {
             if (this.getParent().get() == list1) {
@@ -305,7 +305,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             Component checkBoxItem) {
         boolean marking = false;
         for (Component i : list.getChildren()
-                .filter(c -> ((Checkbox) c).isEnabled())
+                .filter(c -> ((SelectItem) c).isEnabled())
                 .collect(Collectors.toList())) {
             if (i == anchor || i == checkBoxItem) {
                 marking = !marking;
@@ -357,7 +357,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         allButton = new Button(VaadinIcon.ANGLE_DOUBLE_RIGHT.create());
         allButton.addClickListener(event -> {
             list1.getChildren().forEach(comp -> {
-                Checkbox checkbox = (Checkbox) comp;
+                SelectItem checkbox = (SelectItem) comp;
                 list1.remove(checkbox);
                 list2.add(checkbox);
             });
@@ -392,17 +392,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         recycleButton.addClickListener(event -> {
             // true if any value is selected
             boolean any2 = list2.getChildren()
-                    .anyMatch(c -> ((Checkbox) c).getValue());
+                    .anyMatch(c -> ((SelectItem) c).getValue());
             // then set all to the negation (any? then all false, none? than all
             // true)
             list2.getChildren().forEach(comp -> {
-                Checkbox checkbox = (Checkbox) comp;
+                SelectItem checkbox = (SelectItem) comp;
                 checkbox.setValue(!any2);
             });
             boolean any1 = list1.getChildren()
-                    .anyMatch(c -> ((Checkbox) c).getValue());
+                    .anyMatch(c -> ((SelectItem) c).getValue());
             list1.getChildren().forEach(comp -> {
-                Checkbox checkbox = (Checkbox) comp;
+                SelectItem checkbox = (SelectItem) comp;
                 checkbox.setValue(!any1);
             });
         });
@@ -493,7 +493,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     // Internal method that moves items from list1 to list2
     private void moveItems(VerticalLayout list1, VerticalLayout list2) {
         list1.getChildren().forEach(comp -> {
-            Checkbox checkbox = (Checkbox) comp;
+            SelectItem checkbox = (SelectItem) comp;
             if (checkbox.getValue()) {
                 list1.remove(checkbox);
                 list2.add(checkbox);
@@ -806,8 +806,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         CheckBoxItem<T> checkbox = new CheckBoxItem<>(keyMapper.key(item),
                 item);
         checkbox.setWidth("100%");
+        checkbox.setTabIndex(0);
         checkbox.getElement().setAttribute("role", "listitem");
-        // checkbox.setTabIndex(0);
         updateCheckbox(checkbox);
         return checkbox;
     }
@@ -843,7 +843,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     public void clear() {
         super.clear();
         list2.getChildren().forEach(comp -> {
-            Checkbox checkbox = (Checkbox) comp;
+            SelectItem checkbox = (SelectItem) comp;
             checkbox.setValue(false);
             list2.remove(checkbox);
             list1.add(checkbox);
@@ -868,14 +868,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     public void clearTicks(ColType column) {
         if (column == ColType.LEFT || column == ColType.BOTH) {
             list1.getChildren().forEach(comp -> {
-                Checkbox checkbox = (Checkbox) comp;
+                SelectItem checkbox = (SelectItem) comp;
                 checkbox.setValue(false);
             });
         }
 
         if (column == ColType.RIGHT || column == ColType.BOTH) {
             list2.getChildren().forEach(comp -> {
-                Checkbox checkbox = (Checkbox) comp;
+                SelectItem checkbox = (SelectItem) comp;
                 checkbox.setValue(false);
             });
         }
@@ -1028,7 +1028,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             ((InMemoryDataProvider) dataProvider).setFilter(null);
         }
         list2.getChildren().forEach(comp -> {
-            Checkbox checkbox = (Checkbox) comp;
+            SelectItem checkbox = (SelectItem) comp;
             checkbox.setValue(false);
             list2.remove(checkbox);
             list1.add(checkbox);
@@ -1085,7 +1085,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             list.getStyle().set("border", LIST_BORDER);
         }
         list.getChildren().forEach(comp -> {
-            Checkbox checkBox = (Checkbox) comp;
+            SelectItem checkBox = (SelectItem) comp;
             checkBox.setEnabled(!readOnly);
         });
     }

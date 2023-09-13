@@ -1,41 +1,118 @@
-twin-col-select[theme~="styled"] {
-	--lumo-contrast-10pct: aliceblue;
-	--lumo-error-color: brown;
-	--lumo-error-text-color: brown;
-	--lumo-error-color-10pct: antiquewhite;
+twin-col-select div.twincolselect-item[checked] { 
+	background: var(--lumo-primary-color);
+	color: var(--lumo-tint-80pct);
 }
 
-twin-col-select[theme~="styled"] .value {
-	box-shadow: var(--lumo-box-shadow-m);
+twin-col-select div.twincolselect-item:focus {
+    box-shadow: inset 0 0 0 2px var(--lumo-base-color);
+    outline: unset;
+   	background: var(--lumo-primary-color-10pct);
 }
 
-twin-col-select[theme~="styled"] .options {
-	box-shadow: var(--lumo-box-shadow-m);
+twin-col-select div.twincolselect-item {
+    padding: var(--lumo-space-xs);
 }
 
-twin-col-select[theme~="styled"] vaadin-button {
-	box-shadow: var(--lumo-box-shadow-m);
-	color: cadetblue;
-    background: aliceblue;
-    border: 1px solid black;
+twin-col-select div.twincolselect-item[disabled] {
+    pointer-events: none;
 }
 
-twin-col-select[theme~="styled"] vaadin-checkbox {
-	--lumo-primary-color: cadetblue;
+twin-col-select  {
+	min-width: 400px;
 }
 
-twin-col-select[theme~="styled"] vaadin-checkbox[checked] label {
-	color: white;
+twin-col-select .twincolselect-errorlabel {
+	color: var(--lumo-error-text-color);
+    font-size: var(--lumo-font-size-xs);
+    line-height: var(--lumo-line-height-xs);
+    will-change: max-height;
+    transition: 0.4s max-height;
+    max-height: 5em;
+    align-self: flex-end;
 }
 
-twin-col-select[theme~="styled"] {
-	--lumo-primary-color: black;
+twin-col-select .twincolselect-label-styles {
+	align-self: flex-start;
+    color: var(--lumo-secondary-text-color);
+	font-weight: 500;
+	font-size: var(--lumo-font-size-s);
+	transition: color 0.2s;
+	line-height: 1;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	position: relative;
+	max-width: 100%;
+	box-sizing: border-box;
+    padding-right: 1em;
+    padding-bottom: 0.5em;	
+    margin-left: calc(var(--lumo-border-radius-m) / 4);    
 }
 
-twin-col-select[theme~="styled"] label {
-	color: darkcyan;
+twin-col-select .twincolselect-label-styles::after {
+    content: var(--lumo-required-field-indicator, "\2022");
+    transition: opacity 0.2s;
+    opacity: var(--tcs-required-dot-opacity);
+    color: var(--lumo-primary-text-color);
+    right: 0;
+    width: 1em;
+    margin-left: 4px;
+    text-align: center;
 }
 
-vaadin-button[disabled] {
-	pointer-events: auto;
+twin-col-select .options {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+twin-col-select .value {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+twin-col-select vaadin-vertical-layout.options:focus {
+    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
+    outline: unset;
+}
+
+twin-col-select vaadin-vertical-layout.value:focus {
+    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
+    outline: unset;
+}
+
+twin-col-select[theme~="vertical"] > vaadin-horizontal-layout { 
+   flex-wrap: wrap;
+   flex-direction: column;
+}
+
+twin-col-select:not([theme~="no-buttons"])[theme~="vertical"] .options {
+  width: 80% !important;
+}
+
+twin-col-select[theme~="vertical"] .options {
+  height: 45%;
+  flex-grow: 1;	
+}
+
+twin-col-select:not([theme~="no-buttons"])[theme~="vertical"] .value {
+  width: 80% !important;
+}
+
+twin-col-select[theme~="vertical"] .value {
+  height: 45%;
+  flex-grow: 1;
+}
+
+twin-col-select[theme~="no-buttons"] .buttons {
+   display: none;
+}
+
+twin-col-select[theme~="vertical"] .buttons {
+   order: 1;
+}
+
+twin-col-select[theme~="vertical"] .twincolselect-errorlabel {
+	align-self: flex-start;
 }

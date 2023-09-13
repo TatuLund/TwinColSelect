@@ -19,7 +19,6 @@ import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
@@ -42,8 +41,8 @@ public class TwinColSelectTest {
                 .getDataProvider();
         dp.setSortComparator((a, b) -> a.compareTo(b));
 
-        List<Checkbox> options = select.list1.getChildren()
-                .map(c -> (Checkbox) c).collect(Collectors.toList());
+        List<SelectItem> options = select.list1.getChildren()
+                .map(c -> (SelectItem) c).collect(Collectors.toList());
 
         // List is now alphabetically ordered
         Assert.assertEquals("Eight", options.get(0).getLabel());
@@ -65,8 +64,8 @@ public class TwinColSelectTest {
         Assert.assertTrue(value.contains("Two"));
         Assert.assertTrue(value.contains("Four"));
 
-        List<Checkbox> selected = select.list2.getChildren()
-                .map(c -> (Checkbox) c).collect(Collectors.toList());
+        List<SelectItem> selected = select.list2.getChildren()
+                .map(c -> (SelectItem) c).collect(Collectors.toList());
 
         Assert.assertEquals(8, select.list1.getComponentCount());
         Assert.assertEquals(2, select.list2.getComponentCount());
@@ -88,8 +87,8 @@ public class TwinColSelectTest {
             count++;
         });
 
-        List<Checkbox> filtered = select.list1.getChildren()
-                .map(c -> (Checkbox) c).collect(Collectors.toList());
+        List<SelectItem> filtered = select.list1.getChildren()
+                .map(c -> (SelectItem) c).collect(Collectors.toList());
 
         // Assert that we have right values, i.e. ones startign with "T"
         Assert.assertEquals("Two", filtered.get(0).getLabel());
@@ -98,7 +97,7 @@ public class TwinColSelectTest {
 
         Button button = (Button) select.buttons.getComponentAt(0);
         button.click();
-        
+
         Assert.assertEquals(1, count);
         Assert.assertEquals(3, value.size());
         Assert.assertTrue(value.contains("Two"));
@@ -107,7 +106,7 @@ public class TwinColSelectTest {
 
         Assert.assertEquals(0, select.list1.getComponentCount());
         Assert.assertEquals(3, select.list2.getComponentCount());
- 
+
     }
 
     @Test
@@ -156,7 +155,7 @@ public class TwinColSelectTest {
                 "Eight", "Nine", "Ten");
 
         for (int i = 0; i < 10; i++) {
-            Checkbox checkbox = (Checkbox) select.list1.getComponentAt(i);
+            SelectItem checkbox = (SelectItem) select.list1.getComponentAt(i);
             Assert.assertFalse(checkbox.getValue());
         }
 
@@ -165,7 +164,7 @@ public class TwinColSelectTest {
         select.markRange(select.list1, from, to);
 
         for (int i = 2; i < 5; i++) {
-            Checkbox checkbox = (Checkbox) select.list1.getComponentAt(i);
+            SelectItem checkbox = (SelectItem) select.list1.getComponentAt(i);
             Assert.assertTrue(checkbox.getValue());
         }
     }
