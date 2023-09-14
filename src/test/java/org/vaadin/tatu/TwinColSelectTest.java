@@ -19,6 +19,8 @@ import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
@@ -375,6 +377,30 @@ public class TwinColSelectTest {
         Assert.assertEquals("Zero", options.getChild(0).getText());
     }
 
+
+    @Test
+    public void invalidAndErrorHandlingWithBinder() {
+        TwinColSelect<String> select = new TwinColSelect<>();
+        select.setItems("One", "Two", "Three");
+
+        Div error = (Div) select.getChildren().skip(2).findFirst().get();
+        Binder<TestBean> binder = new Binder<>();
+        binder.forField(select)
+                .withValidator(value -> value.contains("Two"), "Two required")
+                .bind(TestBean::getValue, TestBean::setValue);
+        TestBean bean = new TestBean();
+        bean.setValue(Set.of("One"));
+        binder.setBean(bean);
+        binder.validate();
+
+        Assert.assertEquals("Two required", error.getText());
+        Assert.assertTrue(error.isVisible());
+
+        select.select("Two");
+
+        Assert.assertFalse(error.isVisible());
+    }
+
     public class TestDataProvider extends ListDataProvider<TestItem> {
         public TestDataProvider(Collection<TestItem> items) {
             super(items);
@@ -383,6 +409,18 @@ public class TwinColSelectTest {
         @Override
         public Object getId(TestItem item) {
             return item.getId();
+        }
+    }
+
+    public class TestBean {
+        private Set<String> value;
+
+        public Set<String> getValue() {
+            return value;
+        }
+
+        public void setValue(Set<String> value) {
+            this.value = value;
         }
     }
 
