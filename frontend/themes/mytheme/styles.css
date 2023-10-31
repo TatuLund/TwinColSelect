@@ -20,12 +20,12 @@ twin-col-select[theme~="styled"] vaadin-button {
     border: 1px solid black;
 }
 
-twin-col-select[theme~="styled"] vaadin-checkbox {
+twin-col-select[theme~="styled"] .twincolselect-item {
 	--lumo-primary-color: cadetblue;
 }
 
-twin-col-select[theme~="styled"] vaadin-checkbox[checked] label {
-	color: white;
+twin-col-select[theme~="styled"] .twincolselect-item[checked] {
+	color: floralwhite;
 }
 
 twin-col-select[theme~="styled"] {
@@ -34,8 +34,4 @@ twin-col-select[theme~="styled"] {
 
 twin-col-select[theme~="styled"] label {
 	color: darkcyan;
-}
-
-vaadin-button[disabled] {
-	pointer-events: auto;
 }
