@@ -191,6 +191,7 @@ public class View extends VerticalLayout implements AppShellConfigurator {
                 nineDisabled, selectSome);
         HorizontalLayout buttons2 = new HorizontalLayout();
         buttons2.add(pickMode, variants, filterMode, sorting, styled);
+
         add(filterField, select, buttons1, buttons2, log);
         setFlexGrow(1, log);
     }

@@ -166,7 +166,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private PickMode pickMode = PickMode.DOUBLE;
 
-    private class TwinColSelectItem<T> extends SelectItem implements ItemComponent<T> {
+    private class TwinColSelectItem<T> extends SelectItem
+            implements ItemComponent<T> {
 
         private final T item;
         private DragSource<TwinColSelectItem<T>> dragSource;
@@ -630,7 +631,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         dropTarget.setActive(true);
         dropTarget.addDropListener(event -> {
             event.getDragSourceComponent().ifPresent(component -> {
-                if (component instanceof TwinColSelectItem) {
+                if (component instanceof TwinColSelectItem
+                        && (component.getParent().get() == list1
+                                || component.getParent().get() == list2)) {
                     Component checkBox = component;
                     VerticalLayout otherList = (VerticalLayout) checkBox
                             .getParent().get();
@@ -833,8 +836,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private TwinColSelectItem<T> createCheckBox(T item) {
-        TwinColSelectItem<T> checkbox = new TwinColSelectItem<>(keyMapper.key(item),
-                item);
+        TwinColSelectItem<T> checkbox = new TwinColSelectItem<>(
+                keyMapper.key(item), item);
         checkbox.setWidth("100%");
         checkbox.setTabIndex(0);
         updateCheckbox(checkbox);
@@ -1014,9 +1017,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public Set<T> getSelectedItems() {
-        return Collections.unmodifiableSet(new LinkedHashSet<>(list2
-                .getChildren().map(comp -> ((TwinColSelectItem<T>) comp).getItem())
-                .collect(Collectors.toList())));
+        return Collections
+                .unmodifiableSet(new LinkedHashSet<>(list2.getChildren()
+                        .map(comp -> ((TwinColSelectItem<T>) comp).getItem())
+                        .collect(Collectors.toList())));
     }
 
     @Override

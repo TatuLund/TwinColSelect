@@ -15,7 +15,8 @@ twin-col-select div.twincolselect-item:focus {
 }
 
 twin-col-select div.twincolselect-item {
-    padding: var(--lumo-space-xs);
+  padding-top: var(--lumo-space-xs);
+  padding-bottom: var(--lumo-space-xs);
 }
 
 twin-col-select div.twincolselect-item[disabled] {
