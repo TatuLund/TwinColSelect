@@ -13,10 +13,9 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DomListenerRegistration;
 
 @Tag(Tag.DIV)
-class SelectItem
-        extends AbstractSinglePropertyField<SelectItem, Boolean>
-        implements HasStyle, Focusable<SelectItem>,
-        ClickNotifier<SelectItem>, HasSize {
+class SelectItem extends AbstractSinglePropertyField<SelectItem, Boolean>
+        implements HasStyle, Focusable<SelectItem>, ClickNotifier<SelectItem>,
+        HasSize {
 
     private Random rand = new Random();
 
@@ -32,17 +31,17 @@ class SelectItem
                 "event.keyCode == 32 ? event.preventDefault() : undefined");
         reg.setFilter("event.keyCode == 32");
         getElement().setAttribute("role", "option");
-        getElement().setAttribute("aria-selected","false");
+        getElement().setAttribute("aria-selected", "false");
     }
 
     private void toggleValueFromClient() {
         this.setModelValue(!getValue(), true);
         if (getValue()) {
             getElement().setAttribute("checked", true);
-            getElement().setAttribute("aria-selected","true");
+            getElement().setAttribute("aria-selected", "true");
         } else {
             getElement().removeAttribute("checked");
-            getElement().setAttribute("aria-selected","false");
+            getElement().setAttribute("aria-selected", "false");
         }
     }
 
@@ -51,10 +50,10 @@ class SelectItem
         super.setValue(value);
         if (value) {
             getElement().setAttribute("checked", true);
-            getElement().setAttribute("aria-selected","true");
+            getElement().setAttribute("aria-selected", "true");
         } else {
             getElement().removeAttribute("checked");
-            getElement().setAttribute("aria-selected","false");
+            getElement().setAttribute("aria-selected", "false");
         }
     }
 
@@ -88,11 +87,13 @@ class SelectItem
     }
 
     void setTooltipText(String tooltip) {
-        String key = "checkbox-" + getElement().getProperty("keyId");
-        setId(key);
-        Html html = new Html("<vaadin-tooltip for='" + key + "' text='"
-                + tooltip + "'></vaadin-tooltip>");
-        getElement().appendChild(html.getElement());
+        if (tooltip != null) {
+            String key = "checkbox-" + getElement().getProperty("keyId");
+            setId(key);
+            Html html = new Html("<vaadin-tooltip for='" + key + "' text='"
+                    + tooltip + "'></vaadin-tooltip>");
+            getElement().appendChild(html.getElement());
+        }
     }
 
     void setLabel(String labelText) {
@@ -107,6 +108,6 @@ class SelectItem
     void click() {
         toggleValueFromClient();
         fireEvent(new ClickEvent<>(this, false, 0, 0, 0, 0, 0, 0, false, false,
-                false, false));        
+                false, false));
     }
 }

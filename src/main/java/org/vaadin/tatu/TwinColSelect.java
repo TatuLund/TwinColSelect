@@ -364,7 +364,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         getElement().getStyle().set("flex-direction", "column");
         HorizontalLayout layout = new HorizontalLayout();
         layout.setWidthFull();
-        layout.setHeight("calc(100% - 37px)");
+        layout.setClassName("twincolselect-container");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
         errorLabel.setId(randomId("twincolselect-error", 5));
@@ -630,7 +630,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         dropTarget.setActive(true);
         dropTarget.addDropListener(event -> {
             event.getDragSourceComponent().ifPresent(component -> {
-                if (component instanceof TwinColSelectItem) {
+                if (component instanceof TwinColSelectItem
+                        && (component.getParent().get() == list1
+                                || component.getParent().get() == list2)) {
                     Component checkBox = component;
                     VerticalLayout otherList = (VerticalLayout) checkBox
                             .getParent().get();
