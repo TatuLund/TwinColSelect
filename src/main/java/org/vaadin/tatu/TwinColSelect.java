@@ -166,7 +166,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private PickMode pickMode = PickMode.DOUBLE;
 
-    private class TwinColSelectItem<T> extends SelectItem implements ItemComponent<T> {
+    private class TwinColSelectItem<T> extends SelectItem
+            implements ItemComponent<T> {
 
         private final T item;
         private DragSource<TwinColSelectItem<T>> dragSource;
@@ -835,8 +836,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private TwinColSelectItem<T> createCheckBox(T item) {
-        TwinColSelectItem<T> checkbox = new TwinColSelectItem<>(keyMapper.key(item),
-                item);
+        TwinColSelectItem<T> checkbox = new TwinColSelectItem<>(
+                keyMapper.key(item), item);
         checkbox.setWidth("100%");
         checkbox.setTabIndex(0);
         updateCheckbox(checkbox);
@@ -1016,9 +1017,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     @Override
     public Set<T> getSelectedItems() {
-        return Collections.unmodifiableSet(new LinkedHashSet<>(list2
-                .getChildren().map(comp -> ((TwinColSelectItem<T>) comp).getItem())
-                .collect(Collectors.toList())));
+        return Collections
+                .unmodifiableSet(new LinkedHashSet<>(list2.getChildren()
+                        .map(comp -> ((TwinColSelectItem<T>) comp).getItem())
+                        .collect(Collectors.toList())));
     }
 
     @Override
@@ -1282,7 +1284,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private String randomId(String prefix, int chars) {
-        int limit = (10 * chars) - 1;
+        int limit = (int) (Math.pow(10, chars) - 1);
         String key = "" + rand.nextInt(limit);
         key = String.format("%" + chars + "s", key).replace(' ', '0');
         return prefix + "-" + key;
