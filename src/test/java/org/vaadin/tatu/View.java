@@ -1,21 +1,15 @@
 package org.vaadin.tatu;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import org.vaadin.tatu.TwinColSelect;
-import org.vaadin.tatu.TwinColSelectListDataView;
-import org.vaadin.tatu.TwinColSelectVariant;
 import org.vaadin.tatu.TwinColSelect.ColType;
 import org.vaadin.tatu.TwinColSelect.FilterMode;
 import org.vaadin.tatu.TwinColSelect.PickMode;
 import org.vaadin.tatu.TwinColSelect.TwinColSelectI18n;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
@@ -23,18 +17,13 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.SessionRouteRegistry;
-import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.theme.Theme;
 
 @Route("")
-@Theme("mytheme")
-public class View extends VerticalLayout implements AppShellConfigurator {
+public class View extends VerticalLayout {
     int newi = 1;
     VerticalLayout log = new VerticalLayout();
     TwinColSelectListDataView<String> dataView = null;
