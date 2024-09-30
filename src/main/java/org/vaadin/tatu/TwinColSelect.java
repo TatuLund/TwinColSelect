@@ -104,6 +104,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         RESETVALUE;
     }
 
+    public enum SortMode {
+        /**
+         * Re-apply filters when sorting
+         */
+        FILTERED,
+        /**
+         * Do not re-apply filters when sorting
+         */
+        FAST;
+    }
+
     /**
      * Defines the picking mode
      * 
@@ -587,6 +598,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private TwinColSelectItem<T> check = null;
 
     private FilterMode filterMode = FilterMode.ITEMS;
+    private SortMode sortMode = SortMode.FILTERED;
 
     private TwinColSelectItem<T> anchorItem = null;
 
@@ -598,9 +610,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private void sortDestinationList(VerticalLayout list2,
             InMemoryDataProvider<T> dataProvider) {
+        var time = System.currentTimeMillis();
         SerializablePredicate<T> filter = dataProvider.getFilter();
+        if (sortMode == SortMode.FILTERED) {
+            dataProvider.clearFilters();
+        }
         Query query = DataViewUtils.getQuery(this);
-        dataProvider.clearFilters();
         Stream<T> sorted = dataProvider.fetch(query);
         List<TwinColSelectItem<T>> sortedBoxes = new ArrayList<>();
         sorted.forEach(item -> {
@@ -614,7 +629,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         });
         list2.removeAll();
         sortedBoxes.forEach(check -> list2.add(check));
-        dataProvider.setFilter(filter);
+        if (sortMode == SortMode.FILTERED) {
+            dataProvider.setFilter(filter);
+        }
     }
 
     // Setup list layout
@@ -1125,13 +1142,26 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     /**
-     * Define how data providers filter is applied
-     * 
+     * Define how data providers filter is applied.
+     *
      * @param filterMode
-     *            Filter mode
+     *            FilterMode
      */
     public void setFilterMode(FilterMode filterMode) {
         this.filterMode = filterMode;
+    }
+
+    /**
+     * Define how filters are applied with sorting.
+     * <p>
+     * Note: This is for performance optimization when also filtering is
+     * applied.
+     *
+     * @param sortMode
+     *            SortMode
+     */
+    public void setSortMode(SortMode sortMode) {
+        this.sortMode = sortMode;
     }
 
     public void setAllButtonCaption(String text) {
