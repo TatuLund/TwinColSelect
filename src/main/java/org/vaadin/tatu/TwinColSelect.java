@@ -104,6 +104,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         RESETVALUE;
     }
 
+    public enum SortMode {
+        /**
+         * Re-apply filters when sorting
+         */
+        FILTERED,
+        /**
+         * Do not re-apply filters when sorting
+         */
+        FAST;
+    }
+
     /**
      * Defines the picking mode
      * 
@@ -587,6 +598,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private TwinColSelectItem<T> check = null;
 
     private FilterMode filterMode = FilterMode.ITEMS;
+    private SortMode sortMode = SortMode.FILTERED;
 
     private TwinColSelectItem<T> anchorItem = null;
 
@@ -600,7 +612,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             InMemoryDataProvider<T> dataProvider) {
         SerializablePredicate<T> filter = dataProvider.getFilter();
         Query query = DataViewUtils.getQuery(this);
-        dataProvider.clearFilters();
+        if (sortMode == SortMode.FILTERED) {
+            dataProvider.clearFilters();
+        }
         Stream<T> sorted = dataProvider.fetch(query);
         List<TwinColSelectItem<T>> sortedBoxes = new ArrayList<>();
         sorted.forEach(item -> {
@@ -614,7 +628,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         });
         list2.removeAll();
         sortedBoxes.forEach(check -> list2.add(check));
-        dataProvider.setFilter(filter);
+        if (sortMode == SortMode.FILTERED) {
+            dataProvider.setFilter(filter);
+        }
     }
 
     // Setup list layout
@@ -1128,10 +1144,23 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      * Define how data providers filter is applied
      * 
      * @param filterMode
-     *            Filter mode
+     *            FilterMode
      */
     public void setFilterMode(FilterMode filterMode) {
         this.filterMode = filterMode;
+    }
+
+    /**
+     * Define how filters are applied with sorting.
+     * <p>
+     * Note: This is for performance optimization when also filtering is
+     * applied.
+     *
+     * @param sortMode
+     *            SortMode
+     */
+    public void setSortMode(SortMode sortMode) {
+        this.sortMode = sortMode;
     }
 
     public void setAllButtonCaption(String text) {
@@ -1284,7 +1313,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     private String randomId(String prefix, int chars) {
-        int limit = (10 * chars) - 1;
+        int limit = (int) (Math.pow(10, chars) - 1);
         String key = "" + rand.nextInt(limit);
         key = String.format("%" + chars + "s", key).replace(' ', '0');
         return prefix + "-" + key;

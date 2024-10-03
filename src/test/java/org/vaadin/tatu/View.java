@@ -17,7 +17,6 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.Binder;
@@ -25,8 +24,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.Theme;
 
 @Route("")
-@Theme("mytheme")
-public class View extends VerticalLayout implements AppShellConfigurator {
+public class View extends VerticalLayout {
     int newi = 1;
     VerticalLayout log = new VerticalLayout();
     TwinColSelectListDataView<String> dataView = null;
