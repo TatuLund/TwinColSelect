@@ -269,6 +269,12 @@ public class TwinColSelectTest {
         Assert.assertEquals("ONE", options.getChild(0).getText());
         Assert.assertEquals("TWO", options.getChild(1).getText());
         Assert.assertEquals("THREE", options.getChild(2).getText());
+        
+        select.select("two");
+
+        Element value = select.getElement().getChild(1).getChild(2);
+        Assert.assertEquals(1, value.getChildCount());
+        Assert.assertEquals("TWO", value.getChild(0).getText());
     }
 
     @Test
