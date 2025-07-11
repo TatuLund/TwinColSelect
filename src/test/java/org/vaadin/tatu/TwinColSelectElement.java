@@ -11,22 +11,23 @@ import com.vaadin.testbench.elementsbase.Element;
 public class TwinColSelectElement extends TestBenchElement {
 
     public VerticalLayoutElement getOptionList() {
-        return this.$(VerticalLayoutElement.class).attribute("class", "options")
+        return this.$(VerticalLayoutElement.class).withClassName("options")
                 .first();
     }
 
     public List<DivElement> getOptions() {
-        return getOptionList().$(DivElement.class).all();
+        return getOptionList().$(DivElement.class).all().stream()
+                .filter(el -> el.hasClassName("twincolselect-item")).toList();
     }
 
     public VerticalLayoutElement getValueList() {
-        return this.$(VerticalLayoutElement.class).attribute("class", "value")
+        return this.$(VerticalLayoutElement.class).withClassName("value")
                 .first();
-
     }
 
     public List<DivElement> getValues() {
-        return getValueList().$(DivElement.class).all();
+        return getValueList().$(DivElement.class).all().stream()
+                .filter(el -> el.hasClassName("twincolselect-item")).toList();
     }
 
 }

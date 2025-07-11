@@ -1,7 +1,5 @@
 package org.vaadin.tatu;
 
-import java.util.Random;
-
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
@@ -12,12 +10,11 @@ import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DomListenerRegistration;
 
+@SuppressWarnings("serial")
 @Tag(Tag.DIV)
 class SelectItem extends AbstractSinglePropertyField<SelectItem, Boolean>
         implements HasStyle, Focusable<SelectItem>, ClickNotifier<SelectItem>,
         HasSize {
-
-    private Random rand = new Random();
 
     SelectItem() {
         super("value", false, String.class, value -> Boolean.valueOf(value),
@@ -32,6 +29,7 @@ class SelectItem extends AbstractSinglePropertyField<SelectItem, Boolean>
         reg.setFilter("event.keyCode == 32");
         getElement().setAttribute("role", "option");
         getElement().setAttribute("aria-selected", "false");
+
     }
 
     private void toggleValueFromClient() {

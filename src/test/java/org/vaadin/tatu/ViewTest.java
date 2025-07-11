@@ -101,8 +101,7 @@ public class ViewTest extends UIUnit4Test {
         // Assert that label has correct text
         NativeLabel label = $(NativeLabel.class)
                 .withClassName("twincolselect-label-styles").first();
-        NativeLabelTester labelTester = new NativeLabelTester(label);
-        Assert.assertEquals("Select Two and Four", labelTester.getText());
+        Assert.assertEquals("Select Two and Four", test(label).getText());
 
         // Assert that button states are correct
         Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());

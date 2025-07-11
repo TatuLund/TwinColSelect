@@ -1,5 +1,6 @@
 package org.vaadin.tatu;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.junit.Assert;
@@ -11,7 +12,6 @@ import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.component.notification.testbench.NotificationElement;
 import com.vaadin.flow.component.orderedlayout.testbench.VerticalLayoutElement;
 
 public class TwinColSelectIT extends AbstractViewTest {
@@ -66,11 +66,13 @@ public class TwinColSelectIT extends AbstractViewTest {
         DivElement option = options.get(1);
         action.moveToElement(option).clickAndHold().moveToElement(valueList)
                 .release().build().perform();
+
         SpanElement message = $(SpanElement.class).id("value-change1");
         Assert.assertEquals("Pekka,Matti", message.getText());
         Assert.assertEquals(optionCount - 2, select.getOptions().size());
 
         List<DivElement> values = select.getValues();
+        Assert.assertEquals(2, values.size());
         Assert.assertEquals("Pekka", values.get(0).getText());
         Assert.assertEquals("Matti", values.get(1).getText());
     }
@@ -117,7 +119,7 @@ public class TwinColSelectIT extends AbstractViewTest {
         Assert.assertEquals("Pekka", focusedElement().getText());
         Assert.assertEquals("true", focusedElement().getAttribute("checked"));
         action.sendKeys(Keys.ARROW_DOWN).perform();
-        wait(20);
+        wait(30);
         Assert.assertEquals("Matti", focusedElement().getText());
         Assert.assertEquals(null, focusedElement().getAttribute("checked"));
         action.sendKeys(Keys.ARROW_DOWN).perform();
@@ -135,6 +137,7 @@ public class TwinColSelectIT extends AbstractViewTest {
         Assert.assertEquals(optionCount - 2, select.getOptions().size());
 
         List<DivElement> values = select.getValues();
+        Assert.assertEquals(2, values.size());
         Assert.assertEquals("Pekka", values.get(0).getText());
         Assert.assertEquals("Jussi", values.get(1).getText());
     }
@@ -201,10 +204,8 @@ public class TwinColSelectIT extends AbstractViewTest {
     }
 
     public void wait(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-        }
+        getDriver().manage().timeouts()
+                .implicitlyWait(Duration.ofMillis(millis));
     }
 
     private WebElement focusedElement() {

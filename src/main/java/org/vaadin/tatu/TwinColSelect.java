@@ -19,6 +19,7 @@ import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.HasValidation;
+import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.ItemLabelGenerator;
 import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.AttachEvent;
@@ -80,6 +81,7 @@ import com.vaadin.flow.shared.Registration;
  * @param <T>
  *            The bean type in TwinColSelect
  */
+@SuppressWarnings("serial")
 @Tag("twin-col-select")
 @CssImport(value = "./twincolselect.css")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
@@ -153,14 +155,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
-    final static String LIST_BORDER = "1px var(--lumo-primary-color) solid";
-    final static String LIST_BORDER_RADIUS = "var(--lumo-border-radius)";
-    final static String LIST_BORDER_ERROR = "1px var(--lumo-error-color) solid";
-    final static String LIST_BORDER_READONLY = "1px dashed var(--lumo-contrast-30pct)";
-    final static String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct)";
-    final static String LIST_BACKGROUND = "var(--lumo-contrast-10pct)";
-    final static String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
-    final static String LIST_BACKGROUND_READONLY = "transparent";
+    static final String LIST_BORDER = "1px var(--lumo-primary-color) solid";
+    static final String LIST_BORDER_RADIUS = "var(--lumo-border-radius)";
+    static final String LIST_BORDER_ERROR = "1px var(--lumo-error-color) solid";
+    static final String LIST_BORDER_READONLY = "1px dashed var(--lumo-contrast-30pct)";
+    static final String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct)";
+    static final String LIST_BACKGROUND = "var(--lumo-contrast-10pct)";
+    static final String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
+    static final String LIST_BACKGROUND_READONLY = "transparent";
 
     private Registration dataProviderListenerRegistration;
     private boolean clearTicksOnSelect = false;
@@ -233,6 +235,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                     doSwapItems();
                 } else {
                     // implement range select
+                    @SuppressWarnings("unchecked")
                     TwinColSelectItem<T> anchor = (TwinColSelectItem<T>) getAnchor();
                     if (click.isShiftKey() && anchor != null) {
                         // Java is unhappy with passing this around
@@ -253,7 +256,13 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                         setAnchor(this);
                     }
                 }
+
+                updateDragImage((VerticalLayout) getParent().get());
             });
+        }
+
+        private void setDragImage(Component component) {
+            dragSource.setDragImage(component);
         }
 
         private void doSwapItems() {
@@ -283,7 +292,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
         private SelectItem getPreviousCheckbox() {
             SelectItem c = null;
-            VerticalLayout list = ((VerticalLayout) getParent().get());
+            var parent = getParent();
+            assert parent.isPresent() : "Item should be attached";
+            VerticalLayout list = ((VerticalLayout) parent.get());
             int index = list.indexOf(this);
             while (index > 0) {
                 index--;
@@ -296,7 +307,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
         private SelectItem getNextCheckbox() {
             SelectItem c = null;
-            VerticalLayout list = ((VerticalLayout) getParent().get());
+            var parent = getParent();
+            assert parent.isPresent() : "Item should be attached";
+            VerticalLayout list = ((VerticalLayout) parent.get());
             int index = list.indexOf(this);
             while (index < (list.getComponentCount() - 1)) {
                 index++;
@@ -308,7 +321,9 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         }
 
         private void swapItems() {
-            if (this.getParent().get() == list1) {
+            var parent = getParent();
+            assert parent.isPresent() : "Item should be attached";
+            if (parent.get() == list1) {
                 moveItems(list1, list2);
             } else {
                 moveItems(list2, list1);
@@ -332,12 +347,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      * @param anchor
      * @param checkBoxItem
      */
+    @SuppressWarnings("unchecked")
     void markRange(VerticalLayout list, Component anchor,
             Component checkBoxItem) {
         boolean marking = false;
         for (Component i : list.getChildren()
-                .filter(c -> ((SelectItem) c).isEnabled())
-                .collect(Collectors.toList())) {
+                .filter(c -> ((SelectItem) c).isEnabled()).toList()) {
             if (i == anchor || i == checkBoxItem) {
                 marking = !marking;
                 ((TwinColSelectItem<T>) i).setValue(true);
@@ -379,18 +394,18 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         layout.setClassName("twincolselect-container");
         setErrorLabelStyles();
         errorLabel.setVisible(false);
-        errorLabel.setId(randomId("twincolselect-error", 5));
+        var errorLabelId = randomId("twincolselect-error", 5);
+        errorLabel.setId(errorLabelId);
         errorLabel.getElement().setAttribute("role", "alert");
-        label.setId(randomId("twincolselect-label", 5));
+        var labelId = randomId("twincolselect-label", 5);
+        label.setId(labelId);
         label.setVisible(false);
         label.getElement().getStyle().set("--tcs-required-dot-opacity", "0");
         setLabelStyles(label);
         setSizeFull();
-        list2.getElement().setAttribute("aria-describedby",
-                errorLabel.getId().get());
+        list2.getElement().setAttribute("aria-describedby", errorLabelId);
         list1.addClassName("options");
-        list1.getElement().setAttribute("aria-describedby",
-                label.getId().get());
+        list1.getElement().setAttribute("aria-describedby", labelId);
         list2.addClassName("value");
         list2.getElement().setAttribute("aria-live", "assertive");
         setupList(list1);
@@ -538,22 +553,22 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     // Internal method that moves items from list1 to list2
-    private void moveItems(VerticalLayout list1, VerticalLayout list2) {
-        list1.getChildren().forEach(comp -> {
+    @SuppressWarnings("unchecked")
+    private void moveItems(VerticalLayout fromList, VerticalLayout toList) {
+        fromList.getChildren().forEach(comp -> {
             SelectItem checkbox = (SelectItem) comp;
             if (checkbox.getValue()) {
-                list1.remove(checkbox);
-                list2.add(checkbox);
+                fromList.remove(checkbox);
+                toList.add(checkbox);
                 if (!checkbox.isEnabled()) {
                     checkbox.setValue(false);
                 }
             }
         });
         DataProvider<T, ?> dp = this.getDataProvider();
-        if (dp instanceof InMemoryDataProvider
+        if (dp instanceof InMemoryDataProvider inMemoryDataProvider
                 && DataViewUtils.getComponentSortComparator(this).isPresent()) {
-            InMemoryDataProvider<T> dataProvider = (InMemoryDataProvider<T>) dp;
-            sortDestinationList(list2, dataProvider);
+            sortDestinationList(toList, inMemoryDataProvider);
         }
         updateButtons();
     }
@@ -604,31 +619,32 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private SerializableFunction<T, String> tooltipGenerator;
 
-    private void setAnchor(Component checkBoxItem) {
-        anchorItem = (TwinColSelectItem<T>) checkBoxItem;
+    @SuppressWarnings("unchecked")
+    private void setAnchor(Component listItem) {
+        anchorItem = (TwinColSelectItem<T>) listItem;
     }
 
-    private void sortDestinationList(VerticalLayout list2,
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void sortDestinationList(VerticalLayout toList,
             InMemoryDataProvider<T> dataProvider) {
-        var time = System.currentTimeMillis();
         SerializablePredicate<T> filter = dataProvider.getFilter();
         if (sortMode == SortMode.FILTERED) {
             dataProvider.clearFilters();
         }
         Query query = DataViewUtils.getQuery(this);
         Stream<T> sorted = dataProvider.fetch(query);
-        List<TwinColSelectItem<T>> sortedBoxes = new ArrayList<>();
+        List<TwinColSelectItem<T>> sortedItems = new ArrayList<>();
         sorted.forEach(item -> {
-            boolean match = list2.getChildren().anyMatch(comp -> {
+            boolean match = toList.getChildren().anyMatch(comp -> {
                 check = (TwinColSelectItem<T>) comp;
                 return (check.getItem().equals(item));
             });
             if (match) {
-                sortedBoxes.add(check);
+                sortedItems.add(check);
             }
         });
-        list2.removeAll();
-        sortedBoxes.forEach(check -> list2.add(check));
+        toList.removeAll();
+        sortedItems.forEach(toList::add);
         if (sortMode == SortMode.FILTERED) {
             dataProvider.setFilter(filter);
         }
@@ -651,8 +667,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 if (component instanceof TwinColSelectItem
                         && (component.getParent().get() == list1
                                 || component.getParent().get() == list2)) {
-                    Component checkBox = component;
-                    VerticalLayout otherList = (VerticalLayout) checkBox
+                    VerticalLayout otherList = (VerticalLayout) component
                             .getParent().get();
                     if (otherList != list)
                         moveItems(otherList, list);
@@ -706,15 +721,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             final AtomicInteger itemCounter = new AtomicInteger(0);
 
             List<TwinColSelect<T>.TwinColSelectItem<T>> selection = this
-                    .getSelectedCheckboxItems().collect(Collectors.toList());
+                    .getSelectedListItems().toList();
 
             getDataProvider().fetch(DataViewUtils.getQuery(this))
-                    .map(item -> createCheckBox((T) item)).forEach(checkbox -> {
-                        TwinColSelectItem<T> checkBoxItem = (TwinColSelect<T>.TwinColSelectItem<T>) checkbox;
-                        if (!selection.stream()
-                                .anyMatch(selected -> checkBoxItem.getItem()
-                                        .equals(selected.getItem()))) {
-                            list1.add(checkBoxItem);
+                    .map(item -> createListItem((T) item)).forEach(listItem -> {
+                        TwinColSelectItem<T> selectItem = (TwinColSelect<T>.TwinColSelectItem<T>) listItem;
+                        if (selection.stream().noneMatch(selected -> selectItem
+                                .getItem().equals(selected.getItem()))) {
+                            list1.add(selectItem);
                         }
                         itemCounter.incrementAndGet();
                     });
@@ -775,7 +789,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     public void setItemEnabledProvider(
             SerializablePredicate<T> itemEnabledProvider) {
         this.itemEnabledProvider = Objects.requireNonNull(itemEnabledProvider);
-        refreshCheckboxes();
+        refreshListItems();
     }
 
     /**
@@ -808,62 +822,64 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         return itemEnabledProvider;
     }
 
-    private Stream<TwinColSelectItem<T>> getCheckboxItems() {
+    @SuppressWarnings("unchecked")
+    private Stream<TwinColSelectItem<T>> getListItems() {
         Stream<Component> all = Stream.concat(list1.getChildren(),
                 list2.getChildren());
         return all.filter(TwinColSelectItem.class::isInstance)
                 .map(child -> (TwinColSelectItem<T>) child);
     }
 
-    private Stream<TwinColSelectItem<T>> getSelectedCheckboxItems() {
+    @SuppressWarnings("unchecked")
+    private Stream<TwinColSelectItem<T>> getSelectedListItems() {
         return list2.getChildren().filter(TwinColSelectItem.class::isInstance)
                 .map(child -> (TwinColSelectItem<T>) child);
     }
 
-    private void refreshCheckboxes() {
-        getCheckboxItems().forEach(this::updateCheckbox);
+    private void refreshListItems() {
+        getListItems().forEach(this::updateListItem);
     }
 
     protected boolean isDisabledBoolean() {
         return getElement().getProperty("disabled", false);
     }
 
-    private void updateEnabled(TwinColSelectItem<T> checkbox) {
+    private void updateEnabled(TwinColSelectItem<T> listItem) {
         boolean disabled = isDisabledBoolean()
-                || !getItemEnabledProvider().test(checkbox.getItem());
-        Serializable rawValue = checkbox.getElement()
+                || !getItemEnabledProvider().test(listItem.getItem());
+        Serializable rawValue = listItem.getElement()
                 .getPropertyRaw("disabled");
         if (rawValue instanceof Boolean) {
             // convert the boolean value to a String to force update the
             // property value. Otherwise since the provided value is the same as
             // the current one the update don't do anything.
-            checkbox.getElement().setProperty("disabled",
+            listItem.getElement().setProperty("disabled",
                     disabled ? Boolean.TRUE.toString() : null);
         } else {
-            checkbox.setEnabled(!disabled);
+            listItem.setEnabled(!disabled);
         }
     }
 
-    private void updateCheckbox(TwinColSelectItem<T> checkbox) {
-        checkbox.setLabel(getItemLabelGenerator().apply(checkbox.getItem()));
-        checkbox.setTooltipText(getTooltipGenerator() != null
-                ? getTooltipGenerator().apply(checkbox.getItem())
+    private void updateListItem(TwinColSelectItem<T> listItem) {
+        listItem.setLabel(getItemLabelGenerator().apply(listItem.getItem()));
+        listItem.setTooltipText(getTooltipGenerator() != null
+                ? getTooltipGenerator().apply(listItem.getItem())
                 : null);
-        updateEnabled(checkbox);
+        updateEnabled(listItem);
     }
 
-    private TwinColSelectItem<T> createCheckBox(T item) {
-        TwinColSelectItem<T> checkbox = new TwinColSelectItem<>(
+    private TwinColSelectItem<T> createListItem(T item) {
+        TwinColSelectItem<T> listItem = new TwinColSelectItem<>(
                 keyMapper.key(item), item);
-        checkbox.setWidth("100%");
-        checkbox.setTabIndex(0);
-        updateCheckbox(checkbox);
-        return checkbox;
+        listItem.setWidth("100%");
+        listItem.setTabIndex(0);
+        updateListItem(listItem);
+        return listItem;
     }
 
     @Override
     public Set<T> getEmptyValue() {
-        return new HashSet<T>();
+        return new HashSet<>();
     }
 
     @Override
@@ -997,11 +1013,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                     if (event instanceof DataChangeEvent.DataRefreshEvent) {
                         T otherItem = ((DataChangeEvent.DataRefreshEvent<T>) event)
                                 .getItem();
-                        this.getCheckboxItems()
+                        this.getListItems()
                                 .filter(item -> Objects.equals(
                                         getItemId(item.item),
                                         getItemId(otherItem)))
-                                .findFirst().ifPresent(this::updateCheckbox);
+                                .findFirst().ifPresent(this::updateListItem);
                     } else {
                         reset(false);
                     }
@@ -1027,17 +1043,17 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      *            theme variants to remove
      */
     public void removeThemeVariants(TwinColSelectVariant... variants) {
-        getThemeNames().removeAll(
-                Stream.of(variants).map(TwinColSelectVariant::getVariantName)
-                        .collect(Collectors.toList()));
+        getThemeNames().removeAll(Stream.of(variants)
+                .map(TwinColSelectVariant::getVariantName).toList());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Set<T> getSelectedItems() {
         return Collections
                 .unmodifiableSet(new LinkedHashSet<>(list2.getChildren()
                         .map(comp -> ((TwinColSelectItem<T>) comp).getItem())
-                        .collect(Collectors.toList())));
+                        .toList()));
     }
 
     @Override
@@ -1072,6 +1088,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                         event.getOldValue(), event.isFromClient())));
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     protected void setPresentationValue(Set<T> newPresentationValue) {
         if (dataProvider.get() instanceof InMemoryDataProvider) {
@@ -1341,6 +1358,30 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
      */
     public TwinColSelectI18n getI18n() {
         return i18n;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void updateDragImage(VerticalLayout list) {
+        Div div = new Div();
+        div.setWidth("250px");
+        list.getChildren().map(child -> ((TwinColSelectItem<T>) child))
+                .forEach(child -> child.setDragImage(null));
+        list.getChildren().map(child -> ((TwinColSelectItem<T>) child))
+                .filter(HasValue::getValue).map(child -> {
+                    var item = new Div(child.getLabel());
+                    item.getStyle().set("background",
+                            "var(--lumo-primary-color-50pct)");
+                    item.getStyle().set("box-shadow",
+                            "inset 0 0 0 2px var(--lumo-base-color)");
+                    item.getStyle().set("color", "var(--lumo-tint-80pct)");
+                    item.getStyle().set("padding-top", "var(--lumo-space-xs)");
+                    item.getStyle().set("padding-bottom",
+                            "var(--lumo-space-xs)");
+                    return item;
+                }).forEach(div::add);
+        list.getChildren().map(child -> ((TwinColSelectItem<T>) child))
+                .filter(HasValue::getValue)
+                .forEach(child -> child.setDragImage(div));
     }
 
     /**

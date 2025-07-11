@@ -10,6 +10,7 @@ import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 
+@SuppressWarnings("serial")
 public class TwinColSelectDataView<T> extends AbstractDataView<T> {
 
     private SerializableConsumer<IdentifierProvider<T>> identifierChangedCallback;
@@ -62,6 +63,7 @@ public class TwinColSelectDataView<T> extends AbstractDataView<T> {
         return getItems().skip(index).findFirst().orElse(null);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(DataViewUtils.getQuery(component));

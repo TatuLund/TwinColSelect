@@ -9,6 +9,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 
+@SuppressWarnings("serial")
 public class TwinColSelectListDataView<T> extends AbstractListDataView<T> {
 
     private SerializableConsumer<IdentifierProvider<T>> identifierChangedCallback;
