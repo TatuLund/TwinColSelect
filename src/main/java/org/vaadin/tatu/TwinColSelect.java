@@ -257,7 +257,8 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                     }
                 }
 
-                updateDragImage((VerticalLayout) getParent().get());
+                getParent().ifPresent(
+                        parent -> updateDragImage((VerticalLayout) parent));
             });
         }
 

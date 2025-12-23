@@ -3,12 +3,12 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.1</version>
     <name>TwinColSelect</name>
     <description>TwinColSelect component for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>24.8.2</vaadin.version>
+        <vaadin.version>24.9.6</vaadin.version>
 
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -17,7 +17,7 @@
 
         <drivers.dir>${project.basedir}/drivers</drivers.dir>
 
-        <jetty.version>11.0.14</jetty.version>
+        <jetty.version>12.0.15</jetty.version>
     </properties>
     <organization>
         <name>Tatu Lund</name>
@@ -51,11 +51,6 @@
             <id>Vaadin prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
         </repository>
-        <!-- Repository needed for the snapshot versions of Vaadin -->
-        <repository>
-            <id>vaadin-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -63,11 +58,6 @@
         <pluginRepository>
             <id>Vaadin prereleases</id>
             <url>https://maven.vaadin.com/vaadin-prereleases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <id>vaadin-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/vaadin-snapshots/</url>
-            <releases><enabled>false</enabled></releases>
         </pluginRepository>
     </pluginRepositories>
 
@@ -95,7 +85,7 @@
 		<dependency>
 			<groupId>io.github.bonigarcia</groupId>
 			<artifactId>webdrivermanager</artifactId>
-			<version>6.1.0</version>
+			<version>6.3.3</version>
 			<scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -155,8 +145,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>org.eclipse.jetty.ee10</groupId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
                     <scanIntervalSeconds>3</scanIntervalSeconds>
@@ -278,8 +268,8 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
+                        <groupId>org.eclipse.jetty.ee10</groupId>
+                        <artifactId>jetty-ee10-maven-plugin</artifactId>
                         <version>${jetty.version}</version>
                         <configuration>
                             <scanIntervalSeconds>0</scanIntervalSeconds>
@@ -302,34 +292,6 @@
                                 <phase>post-integration-test</phase>
                                 <goals>
                                     <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <plugin>
-                        <groupId>com.lazerycode.selenium</groupId>
-                        <artifactId>driver-binary-downloader-maven-plugin
-                        </artifactId>
-                        <version>1.0.17</version>
-                        <configuration>
-                            <onlyGetDriversForHostOperatingSystem>
-                                true
-                            </onlyGetDriversForHostOperatingSystem>
-                            <rootStandaloneServerDirectory>
-                                ${drivers.dir}/driver
-                            </rootStandaloneServerDirectory>
-                            <downloadedZipFileDirectory>
-                                ${drivers.dir}/driver_zips
-                            </downloadedZipFileDirectory>
-                            <customRepositoryMap>
-                                ${project.basedir}/drivers.xml
-                            </customRepositoryMap>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>selenium</goal>
                                 </goals>
                             </execution>
                         </executions>
