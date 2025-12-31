@@ -32,6 +32,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
 import com.vaadin.flow.component.dnd.DropTarget;
@@ -66,6 +67,8 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.shared.Registration;
 
+import tools.jackson.databind.JsonNode;
+
 /**
  * TwinColSelect component, also known as list builder. It is a component for
  * multiselection.
@@ -83,7 +86,7 @@ import com.vaadin.flow.shared.Registration;
  */
 @SuppressWarnings("serial")
 @Tag("twin-col-select")
-@CssImport(value = "./twincolselect.css")
+@StyleSheet("twincolselect.css")
 public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         implements HasItemComponents<T>, HasSize, HasValidation, HasTheme,
         MultiSelect<TwinColSelect<T>, T>,
@@ -211,14 +214,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             });
             DomListenerRegistration reg = getElement()
                     .addEventListener("keydown", event -> {
-                        if (event.getEventData()
-                                .getNumber("event.keyCode") == 40) {
+                        var eventData = event.getEventData();
+                        if (parseKeyCode(eventData) == 40) {
                             focusNext();
-                        } else if (event.getEventData()
-                                .getNumber("event.keyCode") == 38) {
+                        } else if (parseKeyCode(eventData) == 38) {
                             focusPrevious();
-                        } else if (event.getEventData()
-                                .getNumber("event.keyCode") == 13) {
+                        } else if (parseKeyCode(eventData) == 13) {
                             doSwapItems();
                         }
                     });
@@ -260,6 +261,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 getParent().ifPresent(
                         parent -> updateDragImage((VerticalLayout) parent));
             });
+        }
+
+        private static int parseKeyCode(JsonNode eventData) {
+            return eventData.get("event.keyCode").asInt();
         }
 
         private void setDragImage(Component component) {

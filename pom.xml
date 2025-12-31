@@ -3,15 +3,15 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>3.3.1</version>
+    <version>4.0.0</version>
     <name>TwinColSelect</name>
     <description>TwinColSelect component for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>24.9.6</vaadin.version>
+        <vaadin.version>25.0.0</vaadin.version>
 
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -66,6 +66,11 @@
             <groupId>com.vaadin</groupId>
             <!-- Replace artifactId with vaadin-core to use only free components -->
             <artifactId>vaadin-core</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>com.vaadin</groupId>
+        	<artifactId>vaadin-dev</artifactId>
+        	<optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -149,13 +154,19 @@
                 <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
                 <configuration>
-                    <scanIntervalSeconds>3</scanIntervalSeconds>
+                    <scan>3</scan>
                     <!-- Use test scope because the UI/demo classes are in
                             the test package. -->
                     <useTestScope>true</useTestScope>
                     <supportedPackagings>
                         <supportedPackaging>jar</supportedPackaging>
                     </supportedPackagings>
+                    <webApp>
+                        <resourceBases>
+                            <baseResource>${project.basedir}/src/main/resources/META-INF/resources</baseResource>
+                            <baseResource>${project.basedir}/src/test/resources/META-INF/resources</baseResource>
+                        </resourceBases>
+                    </webApp>
                 </configuration>
             </plugin>
         </plugins>
@@ -272,7 +283,7 @@
                         <artifactId>jetty-ee10-maven-plugin</artifactId>
                         <version>${jetty.version}</version>
                         <configuration>
-                            <scanIntervalSeconds>0</scanIntervalSeconds>
+                            <scan>0</scan>
                             <supportedPackagings>
                                 <supportedPackaging>jar</supportedPackaging>
                             </supportedPackagings>

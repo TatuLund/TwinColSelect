@@ -26,6 +26,7 @@ public class TwinColSelectIT extends AbstractViewTest {
 
         // Hide dev mode gizmo, it would interfere screenshot tests
         $("vaadin-dev-tools").first().setProperty("hidden", true);
+        $("copilot-main").first().setProperty("hidden", true);
     }
 
     @Test
