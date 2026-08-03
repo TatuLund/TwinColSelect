@@ -1,11 +1,14 @@
 package org.vaadin.tatu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import com.vaadin.flow.component.Component;
+import com.vaadin.browserless.BrowserlessTest;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.html.Div;
@@ -15,212 +18,213 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.testbench.unit.UIUnit4Test;
 
-public class ViewTest extends UIUnit4Test {
+public class ViewTest extends BrowserlessTest {
 
     @Test
     public void sorting() {
         navigate(View.class);
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Checkbox.class).withCaption("Sorting").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Checkbox.class).withCaption("Sorting").single()).click();
 
-        List<SelectItem> options = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first()).all();
+        List<SelectItem> options = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
+                        .all();
 
         // List is now alphabetically ordered
-        Assert.assertEquals("Eight", options.get(0).getLabel());
-        Assert.assertEquals("Five", options.get(1).getLabel());
-        Assert.assertEquals("Four", options.get(2).getLabel());
-        Assert.assertEquals("Nine", options.get(3).getLabel());
-        Assert.assertEquals("One", options.get(4).getLabel());
-        Assert.assertEquals("Seven", options.get(5).getLabel());
-        Assert.assertEquals("Six", options.get(6).getLabel());
-        Assert.assertEquals("Ten", options.get(7).getLabel());
-        Assert.assertEquals("Three", options.get(8).getLabel());
-        Assert.assertEquals("Two", options.get(9).getLabel());
+        assertEquals("Eight", options.get(0).getLabel());
+        assertEquals("Five", options.get(1).getLabel());
+        assertEquals("Four", options.get(2).getLabel());
+        assertEquals("Nine", options.get(3).getLabel());
+        assertEquals("One", options.get(4).getLabel());
+        assertEquals("Seven", options.get(5).getLabel());
+        assertEquals("Six", options.get(6).getLabel());
+        assertEquals("Ten", options.get(7).getLabel());
+        assertEquals("Three", options.get(8).getLabel());
+        assertEquals("Two", options.get(9).getLabel());
 
         // Pick items
-        $(SelectItem.class).withText("Two").first().click();
-        test($(Button.class).atIndex(2)).click();
-        $(SelectItem.class).withText("Four").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Two").single().click();
+        test(find(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Four").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Selection follows the order
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Four,Two selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Four,Two selected!", value);
 
-        List<SelectItem> selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first())
+        List<SelectItem> selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
                         .withValue(true).all();
-        Assert.assertEquals("Four", selected.get(0).getLabel());
-        Assert.assertEquals("Two", selected.get(1).getLabel());
+        assertEquals("Four", selected.get(0).getLabel());
+        assertEquals("Two", selected.get(1).getLabel());
     }
 
     @Test
     public void paintSelected() {
         navigate(View.class);
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
-        List<SelectItem> options = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first())
+        List<SelectItem> options = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
                         .withValue(true).all();
-        Assert.assertEquals(0, options.size());
+        assertEquals(0, options.size());
 
         // Pick items
-        $(SelectItem.class).withText("Two").first().click();
-        $(SelectItem.class).withText("Four").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Two").single().click();
+        find(SelectItem.class).withText("Four").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
-        List<SelectItem> selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first())
+        List<SelectItem> selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
                         .withValue(true).all();
-        Assert.assertEquals(2, selected.size());
+        assertEquals(2, selected.size());
 
-        test($(Button.class).atIndex(5)).click();
-        options = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first())
+        test(find(Button.class).atIndex(5)).click();
+        options = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
                         .withValue(true).all();
-        Assert.assertEquals(8, options.size());
+        assertEquals(8, options.size());
 
-        selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first())
+        selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
                         .withValue(true).all();
-        Assert.assertEquals(0, selected.size());
+        assertEquals(0, selected.size());
     }
 
     @Test
     public void initialState() {
         navigate(View.class);
 
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(0, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(0, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
         // Assert that label has correct text
-        NativeLabel label = $(NativeLabel.class)
-                .withClassName("twincolselect-label-styles").first();
-        Assert.assertEquals("Select Two and Four", test(label).getText());
+        NativeLabel label = find(NativeLabel.class)
+                .withClassName("twincolselect-label-styles").single();
+        assertEquals("Select Two and Four", test(label).getText());
 
         // Assert that button states are correct
-        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(1)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
 
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        Assert.assertEquals("Item count: 10",
-                test($(Notification.class).last()).getText());
+        test(find(Button.class).withCaption("Set").single()).click();
+        assertEquals("Item count: 10",
+                test(find(Notification.class).last()).getText());
 
         // Assert that options have 10 items
-        Assert.assertEquals(10, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(10, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(0, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
         // Assert button states
-        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(1)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
     }
 
     @Test
     public void readOnlyState() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Put the TwinColSelect in read only state
-        test($(Button.class).withCaption("Read only").first()).click();
+        test(find(Button.class).withCaption("Read only").single()).click();
 
         // Assert that options are inert
-        List<Checkbox> options = $(Checkbox.class,
-                $(VerticalLayout.class).withClassName("options").first()).all();
-        options.forEach(box -> Assert.assertFalse(test(box).isUsable()));
+        List<Checkbox> options = find(Checkbox.class,
+                find(VerticalLayout.class).withClassName("options").single())
+                        .all();
+        options.forEach(box -> assertFalse(test(box).isUsable()));
 
         // Assert that buttons are inert
-        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(5)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(1)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(5)).isUsable());
 
         // Put the TwinColSelect back in normal state
-        test($(Button.class).withCaption("Read only").first()).click();
+        test(find(Button.class).withCaption("Read only").single()).click();
 
         // Assert that options are selectable
-        options.forEach(box -> Assert.assertTrue(test(box).isUsable()));
+        options.forEach(box -> assertTrue(test(box).isUsable()));
 
         // Assert that button states are correct
-        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(1)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
     }
 
     @Test
     public void selectAll_deselectAll() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
-        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(1)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
 
-        test($(Button.class).atIndex(1)).click();
+        test(find(Button.class).atIndex(1)).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals(
                 "One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
                 value);
 
         // Options is empty and value has 10 items
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(10, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
-        List<Checkbox> selected = $(Checkbox.class,
-                $(VerticalLayout.class).withClassName("value").first())
+        assertEquals(0, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(10, find(VerticalLayout.class)
+                .withClassName("value").single().getComponentCount());
+        List<Checkbox> selected = find(Checkbox.class,
+                find(VerticalLayout.class).withClassName("value").single())
                         .withValue(true).all();
-        Assert.assertEquals(0, selected.size());
+        assertEquals(0, selected.size());
 
         // Assert button states are correct
-        Assert.assertFalse(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(1)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(2)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(3)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
 
         // De-select
-        test($(Button.class).atIndex(4)).click();
+        test(find(Button.class).atIndex(4)).click();
 
         // Assert value is empty
-        Assert.assertEquals(10, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(10, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(0, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
         // Assert button states are correct
-        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertFalse(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(1)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(2)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(3)).isUsable());
+        assertFalse(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
 
         // Assert that error text is correct as the field was requited
-        Div errorLabel = $(Div.class)
-                .withAttribute("class", "twincolselect-errorlabel").first();
-        Assert.assertEquals("Empty selection not allowed",
+        Div errorLabel = find(Div.class)
+                .withAttribute("class", "twincolselect-errorlabel").single();
+        assertEquals("Empty selection not allowed",
                 test(errorLabel).getText());
     }
 
@@ -228,74 +232,76 @@ public class ViewTest extends UIUnit4Test {
     public void selectAll_deselectOne() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
-        test($(Button.class).atIndex(1)).click();
+        test(find(Button.class).atIndex(1)).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals(
                 "One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
                 value);
 
         // Options is empty and value has 10 items
-        Assert.assertEquals(0, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(10, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(0, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(10, find(VerticalLayout.class)
+                .withClassName("value").single().getComponentCount());
 
-        $(SelectItem.class).withText("One").first().click();
-        test($(Button.class).atIndex(3)).click();
+        find(SelectItem.class).withText("One").single().click();
+        test(find(Button.class).atIndex(3)).click();
 
         // Assert value has nine items
-        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(1, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(9, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
-        value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
+        value = test(find(Span.class).id("value")).getText();
+        assertEquals(
                 "Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten selected!",
                 value);
-        List<SelectItem> tickedOptions = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first())
+        List<SelectItem> tickedOptions = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
                         .withValue(true).all();
-        Assert.assertEquals(1, tickedOptions.size());
+        assertEquals(1, tickedOptions.size());
     }
 
     @Test
     public void filteringItems() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Set the filter to be "T"
-        test($(TextField.class).withCaption("Filter").first()).setValue("T");
-        Assert.assertEquals("Item count: 3",
-                test($(Notification.class).last()).getText());
+        test(find(TextField.class).withCaption("Filter").single())
+                .setValue("T");
+        assertEquals("Item count: 3",
+                test(find(Notification.class).last()).getText());
 
-        List<SelectItem> filtered = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first()).all();
+        List<SelectItem> filtered = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
+                        .all();
 
         // Assert that we have right values, i.e. ones startign with "T"
-        Assert.assertEquals("Two", filtered.get(0).getLabel());
-        Assert.assertEquals("Three", filtered.get(1).getLabel());
-        Assert.assertEquals("Ten", filtered.get(2).getLabel());
+        assertEquals("Two", filtered.get(0).getLabel());
+        assertEquals("Three", filtered.get(1).getLabel());
+        assertEquals("Ten", filtered.get(2).getLabel());
 
         // Select all three
-        test($(Button.class).atIndex(1)).click();
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Two,Three,Ten selected!", value);
+        test(find(Button.class).atIndex(1)).click();
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Two,Three,Ten selected!", value);
 
         // Clear filter
-        test($(TextField.class).withCaption("Filter").first()).setValue("");
-        Assert.assertEquals("Item count: 10",
-                test($(Notification.class).last()).getText());
+        test(find(TextField.class).withCaption("Filter").single()).setValue("");
+        assertEquals("Item count: 10",
+                test(find(Notification.class).last()).getText());
         // Options has 7 and value has 3 items
-        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(7, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
     }
 
@@ -303,305 +309,308 @@ public class ViewTest extends UIUnit4Test {
     public void errorLabelIsShown() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Pick items
-        $(SelectItem.class).withText("One").first().click();
-        $(SelectItem.class).withText("Three").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("One").single().click();
+        find(SelectItem.class).withText("Three").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert the error label as the selection does not match validator
-        Div errorLabel = $(Div.class)
-                .withAttribute("class", "twincolselect-errorlabel").first();
-        Assert.assertEquals("Selection needs to contain two and four",
+        Div errorLabel = find(Div.class)
+                .withAttribute("class", "twincolselect-errorlabel").single();
+        assertEquals("Selection needs to contain two and four",
                 test(errorLabel).getText());
 
         // Pick items
-        $(SelectItem.class).withText("Two").first().click();
-        $(SelectItem.class).withText("Four").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Two").single().click();
+        find(SelectItem.class).withText("Four").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert that error label is not visible as validator passes
-        Assert.assertFalse(errorLabel.isVisible());
+        assertFalse(errorLabel.isVisible());
     }
 
     @Test
     public void selectionOrderIsPreserved() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Pick three items one at the time
-        $(SelectItem.class).withText("Five").first().click();
-        test($(Button.class).atIndex(2)).click();
-        $(SelectItem.class).withText("Two").first().click();
-        test($(Button.class).atIndex(2)).click();
-        $(SelectItem.class).withText("Four").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Five").single().click();
+        test(find(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Two").single().click();
+        test(find(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("Four").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out in correct order
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Five,Two,Four selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Five,Two,Four selected!", value);
 
         // Find the checkboxes from the target list and assert their labels are
         // in assumed order
-        List<SelectItem> selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first())
+        List<SelectItem> selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
                         .withValue(true).all();
-        Assert.assertEquals("Five", selected.get(0).getLabel());
-        Assert.assertEquals("Two", selected.get(1).getLabel());
-        Assert.assertEquals("Four", selected.get(2).getLabel());
+        assertEquals("Five", selected.get(0).getLabel());
+        assertEquals("Two", selected.get(1).getLabel());
+        assertEquals("Four", selected.get(2).getLabel());
     }
 
     @Test
     public void selectionOrderIsPreserved_clear_singleClick() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Select.class).first()).selectItem("SINGLE");
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Select.class).single()).selectItem("SINGLE");
 
         // Pick three items one at the time
-        $(SelectItem.class).withText("Five").first().click();
-        String value = test($(Span.class).id("value")).getText();
+        find(SelectItem.class).withText("Five").single().click();
+        String value = test(find(Span.class).id("value")).getText();
         // Assert that span is containing the value
-        Assert.assertEquals("Five selected!", value);
-        $(SelectItem.class).withText("Two").first().click();
+        assertEquals("Five selected!", value);
+        find(SelectItem.class).withText("Two").single().click();
         // Assert that span containing the value prints out in correct order
-        value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Five,Two selected!", value);
-        $(SelectItem.class).withText("Four").first().click();
+        value = test(find(Span.class).id("value")).getText();
+        assertEquals("Five,Two selected!", value);
+        find(SelectItem.class).withText("Four").single().click();
         // Assert that span containing the value prints out in correct order
-        value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Five,Two,Four selected!", value);
+        value = test(find(Span.class).id("value")).getText();
+        assertEquals("Five,Two,Four selected!", value);
 
         // Find the checkboxes from the target list and assert their labels are
         // in assumed order
-        List<SelectItem> selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first()).all();
-        Assert.assertEquals("Five", selected.get(0).getLabel());
-        Assert.assertEquals("Two", selected.get(1).getLabel());
-        Assert.assertEquals("Four", selected.get(2).getLabel());
+        List<SelectItem> selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
+                        .all();
+        assertEquals("Five", selected.get(0).getLabel());
+        assertEquals("Two", selected.get(1).getLabel());
+        assertEquals("Four", selected.get(2).getLabel());
 
-        test($(Button.class).withCaption("Clear Ticks (BOTH)").first()).click();
+        test(find(Button.class).withCaption("Clear Ticks (BOTH)").single())
+                .click();
 
         // Move Two back to options, and re-assert
-        $(SelectItem.class).withText("Two").first().click();
-        value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Five,Four selected!", value);
-        selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first()).all();
-        Assert.assertEquals("Five", selected.get(0).getLabel());
-        Assert.assertEquals("Four", selected.get(1).getLabel());
+        find(SelectItem.class).withText("Two").single().click();
+        value = test(find(Span.class).id("value")).getText();
+        assertEquals("Five,Four selected!", value);
+        selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
+                        .all();
+        assertEquals("Five", selected.get(0).getLabel());
+        assertEquals("Four", selected.get(1).getLabel());
 
         // Clear and assert
-        test($(Button.class).withCaption("Clear").first()).click();
-        selected = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("value").first()).all();
-        value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(" selected!", value);
-        Assert.assertEquals(0, selected.size());
+        test(find(Button.class).withCaption("Clear").single()).click();
+        selected = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("value").single())
+                        .all();
+        value = test(find(Span.class).id("value")).getText();
+        assertEquals(" selected!", value);
+        assertEquals(0, selected.size());
     }
 
     @Test
     public void clearTicks() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Tick items
-        $(SelectItem.class).withText("Two").first().click();
-        $(SelectItem.class).withText("Four").first().click();
+        find(SelectItem.class).withText("Two").single().click();
+        find(SelectItem.class).withText("Four").single().click();
 
-        List<SelectItem> ticked = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first())
+        List<SelectItem> ticked = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
                         .withValue(true).all();
 
-        Assert.assertEquals(2, ticked.size());
+        assertEquals(2, ticked.size());
 
-        test($(Button.class).withCaption("Clear Ticks (BOTH)").first()).click();
+        test(find(Button.class).withCaption("Clear Ticks (BOTH)").single())
+                .click();
 
-        ticked = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first())
+        ticked = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
                         .withValue(true).all();
 
-        Assert.assertEquals(0, ticked.size());
+        assertEquals(0, ticked.size());
     }
 
     @Test
     public void selectOne() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
-        $(SelectItem.class).withText("One").first().click();
-        test($(Button.class).atIndex(2)).click();
+        find(SelectItem.class).withText("One").single().click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out in correct order
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("One selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("One selected!", value);
 
         // Assert button states are correct
-        Assert.assertTrue(test($(Button.class).atIndex(1)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(2)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(3)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(4)).isUsable());
-        Assert.assertTrue(test($(Button.class).atIndex(5)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(1)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(2)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(3)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(4)).isUsable());
+        assertTrue(test(find(Button.class).atIndex(5)).isUsable());
     }
 
     @Test
     public void addRefresh() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Select.class).first()).selectItem("SINGLE");
-        Assert.assertEquals("Item count: 10",
-                test($(Notification.class).last()).getText());
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Select.class).single()).selectItem("SINGLE");
+        assertEquals("Item count: 10",
+                test(find(Notification.class).last()).getText());
 
-        test($(Button.class).withCaption("Add/Refresh").first()).click();
-        Assert.assertEquals("Item count: 11",
-                test($(Notification.class).last()).getText());
-        $(SelectItem.class).withText("New 1").first().click();
+        test(find(Button.class).withCaption("Add/Refresh").single()).click();
+        assertEquals("Item count: 11",
+                test(find(Notification.class).last()).getText());
+        find(SelectItem.class).withText("New 1").single().click();
 
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("New 1 selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("New 1 selected!", value);
     }
 
     @Test
     public void selectNineDisabled() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Button.class).withCaption("Disable nine").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Button.class).withCaption("Disable nine").single()).click();
 
         // Check "Nine" is disabled
-        Assert.assertFalse(
-                $(SelectItem.class).withText("Nine").first().isEnabled());
+        assertFalse(
+                find(SelectItem.class).withText("Nine").single().isEnabled());
 
-        test($(Button.class).withCaption("Select").first()).click();
+        test(find(Button.class).withCaption("Select").single()).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Eight,Nine,Ten selected!", value);
 
-        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(7, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
     }
 
     @Test
     public void selectAllNineDisabled() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Button.class).withCaption("Disable nine").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Button.class).withCaption("Disable nine").single()).click();
 
-        test($(Button.class).atIndex(1)).click();
+        test(find(Button.class).atIndex(1)).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals(
                 "One,Two,Three,Four,Five,Six,Seven,Eight,Ten selected!", value);
 
         // Options has one and value has 9 items
-        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(1, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(9, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
     }
 
     @Test
     public void paintAllNineDisabled() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
-        test($(Button.class).withCaption("Disable nine").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
+        test(find(Button.class).withCaption("Disable nine").single()).click();
 
-        test($(Button.class).atIndex(5)).click();
-        test($(Button.class).atIndex(2)).click();
+        test(find(Button.class).atIndex(5)).click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals(
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals(
                 "One,Two,Three,Four,Five,Six,Seven,Eight,Ten selected!", value);
 
         // Options has one and value has 9 items
-        Assert.assertEquals(1, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(9, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(1, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(9, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
     }
 
     @Test
     public void programmaticSelectionResetsFilter() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
         // Set the filter to be "T"
-        test($(TextField.class).withCaption("Filter").first()).setValue("T");
+        test(find(TextField.class).withCaption("Filter").single())
+                .setValue("T");
 
         // Do programmatic select
-        test($(Button.class).withCaption("Select").first()).click();
+        test(find(Button.class).withCaption("Select").single()).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Eight,Nine,Ten selected!", value);
 
-        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(7, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
     }
 
     @Test
     public void selectItemsAndFilter() {
         navigate(View.class);
         // Populate the TwinColSelect by clicking set button
-        test($(Button.class).withCaption("Set").first()).click();
+        test(find(Button.class).withCaption("Set").single()).click();
 
-        $(SelectItem.class).withText("Eight").first().click();
-        $(SelectItem.class).withText("Nine").first().click();
-        $(SelectItem.class).withText("Ten").first().click();
+        find(SelectItem.class).withText("Eight").single().click();
+        find(SelectItem.class).withText("Nine").single().click();
+        find(SelectItem.class).withText("Ten").single().click();
 
-        test($(Button.class).atIndex(2)).click();
+        test(find(Button.class).atIndex(2)).click();
 
         // Assert that span containing the value prints out right value
-        String value = test($(Span.class).id("value")).getText();
-        Assert.assertEquals("Eight,Nine,Ten selected!", value);
+        String value = test(find(Span.class).id("value")).getText();
+        assertEquals("Eight,Nine,Ten selected!", value);
 
-        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(7, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
         // Set the filter to be "T"
-        test($(TextField.class).withCaption("Filter").first()).setValue("T");
+        test(find(TextField.class).withCaption("Filter").single())
+                .setValue("T");
 
-        List<SelectItem> filtered = $(SelectItem.class,
-                $(VerticalLayout.class).withClassName("options").first()).all();
+        List<SelectItem> filtered = find(SelectItem.class,
+                find(VerticalLayout.class).withClassName("options").single())
+                        .all();
 
         // Assert that we have right values, i.e. ones starting with "T", except
         // "Ten" which is selected
-        Assert.assertEquals("Two", filtered.get(0).getLabel());
-        Assert.assertEquals("Three", filtered.get(1).getLabel());
+        assertEquals("Two", filtered.get(0).getLabel());
+        assertEquals("Three", filtered.get(1).getLabel());
 
-        Assert.assertEquals(2, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
+        assertEquals(2, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
 
         // Set the filter to be "T"
-        test($(TextField.class).withCaption("Filter").first()).setValue("");
+        test(find(TextField.class).withCaption("Filter").single()).setValue("");
 
-        Assert.assertEquals(7, $(VerticalLayout.class).withClassName("options")
-                .first().getComponentCount());
-        Assert.assertEquals(3, $(VerticalLayout.class).withClassName("value")
-                .first().getComponentCount());
-    }
-
-    @Override
-    public boolean printTree() {
-        return true;
+        assertEquals(7, find(VerticalLayout.class)
+                .withClassName("options").single().getComponentCount());
+        assertEquals(3, find(VerticalLayout.class).withClassName("value")
+                .single().getComponentCount());
     }
 }

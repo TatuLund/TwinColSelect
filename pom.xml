@@ -8,11 +8,12 @@
     <description>TwinColSelect component for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>25.0.0</vaadin.version>
+        <vaadin.version>25.2.5</vaadin.version>
 
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <browserless-test.version>1.1.1</browserless-test.version>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <drivers.dir>${project.basedir}/drivers</drivers.dir>
@@ -38,6 +39,13 @@
                 <scope>import</scope>
                 <version>${vaadin.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>browserless-test-bom</artifactId>
+                <version>${browserless-test.version}</version>
+                <type>pom</type>
+            <scope>import</scope>
+        </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -79,7 +87,12 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench</artifactId>
+            <artifactId>browserless-test-junit6</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-testbench-junit6</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -87,30 +100,6 @@
             <artifactId>vaadin-charts-flow</artifactId>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>io.github.bonigarcia</groupId>
-			<artifactId>webdrivermanager</artifactId>
-			<version>6.3.3</version>
-			<scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.docker-java</groupId>
-                    <artifactId>docker-java-transport-httpclient5</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.java.dev.jna</groupId>
-                    <artifactId>jna</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.java.dev.jna</groupId>
-                    <artifactId>jna-platform</artifactId>
-                </exclusion>
-            </exclusions>
-		</dependency>
     </dependencies>
 
     <build>

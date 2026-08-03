@@ -1,22 +1,21 @@
 package org.vaadin.tatu;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 import java.util.Objects;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
+import com.vaadin.testbench.BrowserTestBase;
 import com.vaadin.testbench.Parameters;
-import com.vaadin.testbench.ScreenshotOnFailureRule;
+import com.vaadin.testbench.ScreenshotOnFailureExtension;
 import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.TestBenchTestCase;
 
 /**
  * Base class for ITs
@@ -33,19 +32,14 @@ import com.vaadin.testbench.TestBenchTestCase;
  * "https://vaadin.com/docs/v10/testbench/testbench-overview.html">Vaadin
  * TestBench</a>.
  */
-public abstract class AbstractViewTest extends TestBenchTestCase {
+public abstract class AbstractViewTest extends BrowserTestBase {
     private static final int SERVER_PORT = 8080;
 
     private final String route;
 
-    @Rule
-    public ScreenshotOnFailureRule rule = new ScreenshotOnFailureRule(this,
-            true);
-
-    @BeforeClass
-    public static void setupClass() {
-        WebDriverManager.chromedriver().setup();
-    }
+    @RegisterExtension
+    public ScreenshotOnFailureExtension screenshotOnFailureExtension = new ScreenshotOnFailureExtension(
+            this, true);
 
     public AbstractViewTest() {
         this("");
@@ -55,11 +49,11 @@ public abstract class AbstractViewTest extends TestBenchTestCase {
         this.route = route;
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new");
-        setDriver(TestBench.createDriver(new ChromeDriver(options)));
+        TestBench.createDriver(new ChromeDriver(options));
         getDriver().get(getURL(route));
 
         // We do screenshot testing, adjust settings to ensure less flakiness
@@ -71,6 +65,11 @@ public abstract class AbstractViewTest extends TestBenchTestCase {
 
         // Wait for frontend compilation complete before testing
         waitForDevServer();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        getDriver().close();
     }
 
     /**
@@ -107,15 +106,6 @@ public abstract class AbstractViewTest extends TestBenchTestCase {
      */
     private static String getDeploymentHostname() {
         return isUsingHub() ? System.getenv("HOSTNAME") : "localhost";
-    }
-
-    protected void waitForDevServer() {
-        Object result;
-        do {
-            getCommandExecutor().waitForVaadin();
-            result = getCommandExecutor().executeScript(
-                    "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
-        } while (Boolean.TRUE.equals(result));
     }
 
     protected void waitForElementPresent(final By by) {
