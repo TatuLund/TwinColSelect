@@ -5,7 +5,6 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -13,11 +12,11 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 @SuppressWarnings("serial")
 @Tag(Tag.DIV)
 class SelectItem extends AbstractSinglePropertyField<SelectItem, Boolean>
-        implements HasStyle, Focusable<SelectItem>, ClickNotifier<SelectItem>,
+        implements Focusable<SelectItem>, ClickNotifier<SelectItem>,
         HasSize {
 
     SelectItem() {
-        super("value", false, String.class, value -> Boolean.valueOf(value),
+        super("value", false, String.class, Boolean::valueOf,
                 value -> "" + value);
         getElement().addEventListener("click",
                 event -> toggleValueFromClient());
@@ -61,27 +60,6 @@ class SelectItem extends AbstractSinglePropertyField<SelectItem, Boolean>
 
     boolean isDisabled() {
         return getElement().getProperty("disabled", false);
-    }
-
-    @Override
-    public void setReadOnly(boolean readOnly) {
-        super.setReadOnly(readOnly);
-    }
-
-    @Override
-    public boolean isReadOnly() {
-        return super.isReadOnly();
-    }
-
-    @Override
-    public void setRequiredIndicatorVisible(boolean requiredIndicatorVisible) {
-        super.setRequiredIndicatorVisible(requiredIndicatorVisible);
-
-    }
-
-    @Override
-    public boolean isRequiredIndicatorVisible() {
-        return super.isRequiredIndicatorVisible();
     }
 
     void setTooltipText(String tooltip) {

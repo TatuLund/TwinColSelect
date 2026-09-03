@@ -1,47 +1,85 @@
-twin-col-select .twincolselect-container {
-	height: 250px;
-	flex-grow: 1;
+twin-col-select.lumo {
+  --_selected-item-background: var(--lumo-primary-color);
+  --_selected-item-color: var(--lumo-tint-80pct);
+  --_item-focus-background: var(--lumo-primary-color-10pct);
+  --_item-focus-border-color: var(--lumo-base-color);
+  --_error-text-color: var(--lumo-error-text-color);
+  --_error-text-size: font-size: var(--vaadin-input-field-error-font-size, inherit);
+  --_error-line-height: var(--lumo-line-height-xs);
+  --_label-text-size: var(--lumo-font-size-s);
+  --_label-text-color: var(--lumo-secondary-text-color);
+  --_list_focus-color: var(--lumo-primary-color-50pct);
+  --_item-badding: var(--lumo-space-xs);
+  --_label-margin: calc(var(--lumo-border-radius-m) / 4);
+  --_required-indicator: var(--lumo-required-field-indicator, "\2022");
+  --_required-indicator-color: var(--lumo-primary-text-color);
+  --_list-border-color: var(--lumo-primary-color);
+  --_list-radius: var(--lumo-border-radius);
+  --_list-background: var(--lumo-contrast-10pct);
+}
+
+twin-col-select.aura {
+  --_selected-item-background: var(--aura-accent-color);
+  --_selected-item-color: var(--aura-accent-contrast-color);
+  --_item-focus-background: var(--vaadin-grid-row-selected-background-color);
+  --_item-focus-border-color: var(--vaadin-base-color);
+  --_error-text-color: var(--vaadin-input-field-error-color, var(--vaadin-text-color));
+  --_error-text-size: var(--vaadin-input-field-error-font-size, inherit);
+  --_error-line-height: var(--vaadin-input-field-error-line-height, inherit);
+  --_label-text-color: var(--vaadin-input-field-label-color, var(--vaadin-text-color));
+  --_label-text-size: var(--vaadin-input-field-label-font-size, inherit);
+  --_list_focus-color: var(--aura-accent-color);
+  --_item-badding: var(--vaadin-padding-xs);
+  --_label-margin: var(--vaadin-input-field-label-margin, 2px);
+  --_required-indicator: var(--vaadin-input-field-required-indicator, '*');
+  --_required-indicator-color: var(--vaadin-input-field-required-indicator-color, var(--vaadin-text-color-secondary));
+  --_list-border-color: var(--vaadin-border-color);
+  --_list-radius: var(--vaadin-input-field-border-radius, var(--vaadin-radius-m));
+  --_list-background: var(--vaadin-background-color);
 }
 
 twin-col-select div.twincolselect-item[checked] { 
-	background: var(--lumo-primary-color);
-	color: var(--lumo-tint-80pct);
+	background: var(--_selected-item-background) !important;
+	color: var(--_selected-item-color);
 }
 
 twin-col-select div.twincolselect-item:focus {
-    box-shadow: inset 0 0 0 2px var(--lumo-base-color);
-    outline: unset;
-   	background: var(--lumo-primary-color-10pct);
+  box-shadow: inset 0 0 0 2px var(--_item-focus-border-color);
+  outline: unset;
+  background: var(--_item-focus-background);
 }
 
 twin-col-select div.twincolselect-item {
-  padding-top: var(--lumo-space-xs);
-  padding-bottom: var(--lumo-space-xs);
-}
-
-twin-col-select div.twincolselect-item[disabled] {
-    pointer-events: none;
-}
-
-twin-col-select  {
-	min-width: 400px;
+  padding-top: var(--_item-badding);
+  padding-bottom: var(--_item-badding);
 }
 
 twin-col-select .twincolselect-errorlabel {
-	color: var(--lumo-error-text-color);
-    font-size: var(--lumo-font-size-xs);
-    line-height: var(--lumo-line-height-xs);
-    will-change: max-height;
-    transition: 0.4s max-height;
-    max-height: 5em;
-    align-self: flex-end;
+	color: var(--_error-text-color);
+  font-size: var(--_error-text-size);
+  line-height: var(--_error-line-height);
+  will-change: max-height;
+  transition: 0.4s max-height;
+  max-height: 5em;
+  align-self: flex-end;
+  display: flex;
+}
+
+twin-col-select.aura .twincolselect-errorlabel::before {
+  content: '';
+  display: inline-block;
+  flex: none;
+  width: var(--vaadin-icon-size, 1lh);
+  height: var(--vaadin-icon-size, 1lh);
+  mask: var(--_vaadin-icon-warn) 50% / var(--vaadin-icon-visual-size, 100%) no-repeat;
+  background: currentColor;
 }
 
 twin-col-select .twincolselect-label-styles {
 	align-self: flex-start;
-    color: var(--lumo-secondary-text-color);
+  color: var(--_label-text-color);
 	font-weight: 500;
-	font-size: var(--lumo-font-size-s);
+	font-size: var(--_label-text-size);
 	transition: color 0.2s;
 	line-height: 1;
 	overflow: hidden;
@@ -50,20 +88,52 @@ twin-col-select .twincolselect-label-styles {
 	position: relative;
 	max-width: 100%;
 	box-sizing: border-box;
-    padding-right: 1em;
-    padding-bottom: 0.5em;	
-    margin-left: calc(var(--lumo-border-radius-m) / 4);    
+  padding-right: 1em;
+  padding-bottom: 0.5em;	
+  margin-left: var(--_label-margin);
 }
 
 twin-col-select .twincolselect-label-styles::after {
-    content: var(--lumo-required-field-indicator, "\2022");
-    transition: opacity 0.2s;
-    opacity: var(--tcs-required-dot-opacity);
-    color: var(--lumo-primary-text-color);
-    right: 0;
-    width: 1em;
-    margin-left: 4px;
-    text-align: center;
+  content: var(--_required-indicator);
+  transition: opacity 0.2s;
+  opacity: var(--tcs-required-dot-opacity);
+  color: var(--_required-indicator-color);
+  right: 0;
+  width: 1em;
+  margin-left: 4px;
+  text-align: center;
+}
+
+twin-col-select vaadin-vertical-layout.options,
+twin-col-select vaadin-vertical-layout.value {
+  border: 1px solid var(--_list-border-color);
+  border-radius: var(--_list-radius);
+  background: var(--_list-background);
+  box-shadow: var(--aura-shadow-xs);
+}
+
+twin-col-select vaadin-vertical-layout.options:focus {
+  box-shadow: 0 0 0 2px var(--_list_focus-color);
+  outline: unset;
+}
+
+twin-col-select vaadin-vertical-layout.value:focus {
+  box-shadow: 0 0 0 2px var(--_list_
+  focus-color);
+  outline: unset;
+}
+
+twin-col-select .twincolselect-container {
+	height: 250px;
+	flex-grow: 1;
+}
+
+twin-col-select div.twincolselect-item[disabled] {
+    pointer-events: none;
+}
+
+twin-col-select  {
+	min-width: 400px;
 }
 
 twin-col-select .options {
@@ -78,19 +148,9 @@ twin-col-select .value {
 	overflow-y: auto;
 }
 
-twin-col-select vaadin-vertical-layout.options:focus {
-    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
-    outline: unset;
-}
-
-twin-col-select vaadin-vertical-layout.value:focus {
-    box-shadow: 0 0 0 2px var(--lumo-primary-color-50pct);
-    outline: unset;
-}
-
 twin-col-select[theme~="vertical"] > vaadin-horizontal-layout { 
-   flex-wrap: wrap;
-   flex-direction: column;
+  flex-wrap: wrap;
+  flex-direction: column;
 }
 
 twin-col-select:not([theme~="no-buttons"])[theme~="vertical"] .options {

@@ -31,7 +31,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dnd.DragSource;
 import com.vaadin.flow.component.dnd.DropEffect;
@@ -61,7 +60,6 @@ import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.function.SerializablePredicate;
@@ -158,12 +156,12 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     private ItemLabelGenerator<T> itemLabelGenerator = String::valueOf;
 
-    static final String LIST_BORDER = "1px var(--lumo-primary-color) solid";
-    static final String LIST_BORDER_RADIUS = "var(--lumo-border-radius)";
-    static final String LIST_BORDER_ERROR = "1px var(--lumo-error-color) solid";
-    static final String LIST_BORDER_READONLY = "1px dashed var(--lumo-contrast-30pct)";
-    static final String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct)";
-    static final String LIST_BACKGROUND = "var(--lumo-contrast-10pct)";
+    static final String LIST_BORDER = "1px var(--vaadin-border-color) solid";
+    static final String LIST_BORDER_RADIUS = "var(--vaadin-radius-m)";
+    static final String LIST_BORDER_ERROR = "1px var(--lumo-error-color, var(--vaadin-border-color)) solid";
+    static final String LIST_BORDER_READONLY = "1px dashed var(--lumo-contrast-30pct, var(--vaadin-border-color))";
+    static final String LIST_BACKGROUND_ERROR = "var(--lumo-error-color-10pct, var(--vaadin-background-color))";
+    static final String LIST_BACKGROUND = "var(--vaadin-background-color)";
     static final String LIST_BACKGROUND_DROP = "var(--lumo-contrast-30pct)";
     static final String LIST_BACKGROUND_READONLY = "transparent";
 
@@ -185,6 +183,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     private class TwinColSelectItem<T> extends SelectItem
             implements ItemComponent<T> {
 
+        private static final String ITEM_SHOULD_BE_ATTACHED = "Item should be attached";
         private final T item;
         private DragSource<TwinColSelectItem<T>> dragSource;
 
@@ -192,7 +191,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
             super();
             this.addClassName("twincolselect-item");
             this.item = item;
-            getElement().setProperty(VALUE, id);
+            super.getElement().setProperty(VALUE, id);
             dragSource = DragSource.create(this);
             dragSource.setDraggable(true);
             dragSource.setEffectAllowed(EffectAllowed.MOVE);
@@ -212,7 +211,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 list1.getStyle().set("background", LIST_BACKGROUND);
                 list2.getStyle().set("background", background);
             });
-            DomListenerRegistration reg = getElement()
+            DomListenerRegistration reg = super.getElement()
                     .addEventListener("keydown", event -> {
                         var eventData = event.getEventData();
                         if (parseKeyCode(eventData) == 40) {
@@ -232,7 +231,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 if ((pickMode == PickMode.DOUBLE && click.getClickCount() == 2)
                         || (pickMode == PickMode.SINGLE && !click.isCtrlKey()
                                 && !click.isShiftKey())) {
-                    setValue(true);
+                    super.setValue(true);
                     doSwapItems();
                 } else {
                     // implement range select
@@ -299,7 +298,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         private SelectItem getPreviousCheckbox() {
             SelectItem c = null;
             var parent = getParent();
-            assert parent.isPresent() : "Item should be attached";
+            assert parent.isPresent() : ITEM_SHOULD_BE_ATTACHED;
             VerticalLayout list = ((VerticalLayout) parent.get());
             int index = list.indexOf(this);
             while (index > 0) {
@@ -314,7 +313,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         private SelectItem getNextCheckbox() {
             SelectItem c = null;
             var parent = getParent();
-            assert parent.isPresent() : "Item should be attached";
+            assert parent.isPresent() : ITEM_SHOULD_BE_ATTACHED;
             VerticalLayout list = ((VerticalLayout) parent.get());
             int index = list.indexOf(this);
             while (index < (list.getComponentCount() - 1)) {
@@ -328,7 +327,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
         private void swapItems() {
             var parent = getParent();
-            assert parent.isPresent() : "Item should be attached";
+            assert parent.isPresent() : ITEM_SHOULD_BE_ATTACHED;
             if (parent.get() == list1) {
                 moveItems(list1, list2);
             } else {
@@ -387,8 +386,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
 
     protected TwinColSelect(Set<T> initialValue) {
         super(initialValue);
-        // getElement().attachShadow();
-        // ShadowRoot shadow = getElement().getShadowRoot().get();
         if (initialValue != null) {
             setModelValue(initialValue, false);
             setPresentationValue(initialValue);
@@ -515,9 +512,11 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected void onAttach(AttachEvent attachEvent) {
         super.onAttach(attachEvent);
         detectDirection();
+        detectTheme();
         if (getDataProvider() != null
                 && dataProviderListenerRegistration == null) {
             setupDataProviderListener(getDataProvider());
@@ -559,7 +558,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     // Internal method that moves items from list1 to list2
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     private void moveItems(VerticalLayout fromList, VerticalLayout toList) {
         fromList.getChildren().forEach(comp -> {
             SelectItem checkbox = (SelectItem) comp;
@@ -715,11 +714,10 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         errorLabel.addClassName("twincolselect-errorlabel");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     private void reset(boolean refresh) {
-        if (filterMode == FilterMode.RESETVALUE) {
-            if (!refresh)
-                super.clear();
+        if (filterMode == FilterMode.RESETVALUE && !refresh) {
+            super.clear();
         }
         keyMapper.removeAll();
         list1.removeAll();
@@ -886,11 +884,6 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     @Override
     public Set<T> getEmptyValue() {
         return new HashSet<>();
-    }
-
-    @Override
-    public Element getElement() {
-        return super.getElement();
     }
 
     @Override
@@ -1228,12 +1221,14 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public TwinColSelectDataView<T> getGenericDataView() {
         return new TwinColSelectDataView<>(this::getDataProvider, this,
                 this::identifierProviderChanged);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public TwinColSelectDataView<T> setItems(
             DataProvider<T, Void> dataProvider) {
         setDataProvider(dataProvider);
@@ -1257,6 +1252,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public TwinColSelectListDataView<T> getListDataView() {
         return new TwinColSelectListDataView<>(this::getDataProvider, this,
                 this::identifierProviderChanged,
@@ -1264,6 +1260,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public TwinColSelectListDataView<T> setItems(
             ListDataProvider<T> dataProvider) {
         setDataProvider(dataProvider);
@@ -1275,6 +1272,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected boolean valueEquals(Set<T> value1, Set<T> value2) {
         assert value1 != null && value2 != null;
         if (value1.size() != value2.size()) {
@@ -1292,7 +1290,7 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
         return ids1.equals(ids2);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "deprecation" })
     private IdentifierProvider<T> getIdentifierProvider() {
         IdentifierProvider<T> identifierProviderObject = ComponentUtil
                 .getData(this, IdentifierProvider.class);
@@ -1390,6 +1388,24 @@ public class TwinColSelect<T> extends AbstractField<TwinColSelect<T>, Set<T>>
                 .forEach(child -> child.setDragImage(div));
     }
 
+    private void detectTheme() {
+        getElement().executeJs(
+                """
+                        const rootElement = document.documentElement;
+                        const style = getComputedStyle(rootElement);
+                        let theme = "";
+                        theme =
+                            style.getPropertyValue("--vaadin-aura-theme").trim() === "1" ? "aura" : "";
+                        if (theme === "") {
+                            theme =
+                                style.getPropertyValue("--vaadin-lumo-theme").trim() === "1"
+                                    ? "lumo"
+                                    : "";
+                        }
+                        this.classList.add(theme);
+                        """);
+    }
+    
     /**
      * Class for defining internationalization texts
      */

@@ -1,4 +1,4 @@
-@import 'lumo/lumo.css';
+@import 'aura/aura.css';
 
 twin-col-select[theme~="styled"] {
 	--lumo-contrast-10pct: aliceblue;
