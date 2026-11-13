@@ -4,10 +4,8 @@ import java.time.Duration;
 import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NotFoundException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
@@ -20,19 +18,6 @@ public class TwinColSelectIT extends AbstractViewTest {
 
     public TwinColSelectIT() {
         super("twoselects");
-    }
-
-    @BeforeEach
-    public void init() throws Exception {
-        super.setup();
-
-        // Hide dev mode gizmo, it would interfere screenshot tests
-        try {
-            $("vaadin-dev-tools").first().setProperty("hidden", true);
-            $("copilot-main").first().setProperty("hidden", true);
-        } catch (NotFoundException e) {
-
-        }
     }
 
     @BrowserTest

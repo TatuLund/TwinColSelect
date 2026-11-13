@@ -2,10 +2,10 @@ package org.vaadin.tatu;
 
 import java.util.Objects;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NotFoundException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -13,9 +13,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.vaadin.testbench.BrowserTestBase;
+import com.vaadin.testbench.DriverSupplier;
 import com.vaadin.testbench.Parameters;
 import com.vaadin.testbench.ScreenshotOnFailureExtension;
-import com.vaadin.testbench.TestBench;
 
 /**
  * Base class for ITs
@@ -32,7 +32,8 @@ import com.vaadin.testbench.TestBench;
  * "https://vaadin.com/docs/v10/testbench/testbench-overview.html">Vaadin
  * TestBench</a>.
  */
-public abstract class AbstractViewTest extends BrowserTestBase {
+public abstract class AbstractViewTest extends BrowserTestBase
+        implements DriverSupplier {
     private static final int SERVER_PORT = 8080;
 
     private final String route;
@@ -49,11 +50,19 @@ public abstract class AbstractViewTest extends BrowserTestBase {
         this.route = route;
     }
 
-    @BeforeEach
-    public void setup() throws Exception {
+    @Override
+    public WebDriver createDriver() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        TestBench.createDriver(new ChromeDriver(options));
+        options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox");
+        String[] chromeOptions = Parameters.getChromeOptions();
+        if (chromeOptions != null) {
+            options.addArguments(chromeOptions);
+        }
+        return new ChromeDriver(options);
+    }
+
+    @BeforeEach
+    public void setup() {
         getDriver().get(getURL(route));
 
         // We do screenshot testing, adjust settings to ensure less flakiness
@@ -65,11 +74,25 @@ public abstract class AbstractViewTest extends BrowserTestBase {
 
         // Wait for frontend compilation complete before testing
         waitForDevServer();
+
+        disableDevTools();
+        disableCopilot();
     }
 
-    @AfterEach
-    public void afterEach() {
-        getDriver().close();
+    private void disableDevTools() {
+        try {
+            $("vaadin-dev-tools").first().setProperty("hidden", true);
+        } catch (NotFoundException e) {
+            // Ignore if the dev tools element is not present.
+        }
+    }
+
+    private void disableCopilot() {
+        try {
+            $("copilot-main").first().setProperty("hidden", true);
+        } catch (NotFoundException e) {
+            // Ignore if the Copilot element is not present.
+        }
     }
 
     /**

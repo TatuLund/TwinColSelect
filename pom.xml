@@ -3,12 +3,12 @@
 
     <groupId>org.vaadin.tatu</groupId>
     <artifactId>twincolselect</artifactId>
-    <version>4.1.1</version>
+    <version>4.1.2</version>
     <name>TwinColSelect</name>
     <description>TwinColSelect component for Vaadin platform</description>
 
     <properties>
-        <vaadin.version>25.2.5</vaadin.version>
+        <vaadin.version>25.3.5</vaadin.version>
 
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -300,7 +300,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>2.22.2</version>
+                        <version>3.6.0</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -312,12 +312,6 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
-                            <systemPropertyVariables>
-                                <!-- Pass location of downloaded webdrivers to the tests -->
-                                <webdriver.chrome.driver>
-                                    ${webdriver.chrome.driver}
-                                </webdriver.chrome.driver>
-                            </systemPropertyVariables>
                         </configuration>
                     </plugin>
                     <plugin>

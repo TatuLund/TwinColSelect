@@ -1,0 +1,2 @@
+Frontend files bundled using @JsModule("./somefile.js") or @CssImport("./somefile.css") go into this directory.
+Runtime resources loaded using @StyleSheet or @JavaScript belong under META-INF/resources instead.

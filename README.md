@@ -3,7 +3,7 @@
 
 # TwinColSelect
 
-Vaadin 23 Java version of TwinColSelect
+Vaadin 25 Java version of TwinColSelect
 
 TwinColSelect component, also known as list builder. It is a component for multiselection.
 
@@ -25,18 +25,37 @@ https://github.com/TatuLund/TwinColSelect/blob/nextlts/frontend/themes/mytheme/s
 
 ## Release notes
 
-### Version 3.0.1
-- Use NativeLabel instead of Label
-- Small improvement in keyboard navigation
+### Version 4.1.2
+- Migrate frontend resources to `META-INF/frontend` to avoid deprecated resource location warnings in Vaadin 25.2 and newer
 
-### Version 3.0.0
-- The first release to support Vaadin 24
+### Version 4.1.1
+- Depend on `vaadin-core` instead of `vaadin` to avoid transitive dependencies on commercial components
+
+### Version 4.1.0
+- Add support for the Aura theme
+
+### Version 4.0.0
+- The first release to support Vaadin 25.0.0
+- Only the Lumo theme is supported in this version
 
 ## Development instructions
+
+Bundled frontend sources used with `@JsModule` or `@CssImport` belong in
+`src/main/resources/META-INF/frontend`, not the deprecated
+`src/main/resources/META-INF/resources/frontend` location.
+Runtime resources used with `@StyleSheet` or `@JavaScript`, including
+`twincolselect.css`, remain in `src/main/resources/META-INF/resources`.
 
 Starting the test/demo server:
 1. Run `mvn jetty:run`.
 2. Open http://localhost:8080 in the browser.
+
+Run unit tests with `mvn test`. To also run the headless Chrome E2E tests,
+use `mvn -Pintegration-tests verify`; this starts and stops the demo server.
+The E2E suite requires Chrome and a valid Vaadin TestBench license
+(`VAADIN_PRO_KEY` on CI). The dev container installs Chromium and its matching
+ChromeDriver. The test browser runs with `--no-sandbox`, so run it only against
+trusted content.
 
 ## Publishing to Vaadin Directory
 

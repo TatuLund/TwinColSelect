@@ -1,3 +1,6 @@
 src/main/frontend/generated/
 eclipse-formatter.xml
 target/
+.pnpm-store/
+frontend/generated/
+node_modules/

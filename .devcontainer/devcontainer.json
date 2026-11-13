@@ -1,0 +1,32 @@
+{
+  "name": "Vaadin Java Dev Container",
+
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "JBR_VERSION": "25.0.4.1+329142-jbr",
+      "MAVEN_VERSION": "3.10.0",
+      "HOTSWAP_AGENT_VERSION": "2.0.3"
+    }
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24"
+    }
+  },
+
+  "mounts": [
+    "source=project-module-a-target,target=/workspaces/TwinColSelect/target,type=volume",
+    "source=project-maven-cache,target=/home/vscode/.m2,type=volume"
+  ],
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "remoteUser": "vscode",
+
+  "remoteEnv": {
+    "VAADIN_PRO_KEY": "${localEnv:VAADIN_PRO_KEY}"
+  }
+}
